@@ -55,10 +55,10 @@ current_buffer_colors_index = 0
 for _ in range(10):
     buffer_colors.append(pygame.Color(255, 255, 255, 255))
 
-editing_surface = pygame.Surface((32, 32))
+editing_surface = pygame.Surface((64, 64))
 editing_surface_size = (32, 32)
 editing_surface_zoom = 30
-editing_surface_max_zoom = 200
+editing_surface_max_zoom = 100
 
 app_font_size = 20
 app_font_object = pygame.font.Font(None, app_font_size)
@@ -83,6 +83,8 @@ previous_frame_time = time.time()
 clock = pygame.time.Clock()
 while True:
     clock.tick(max_fps)
+    fps = clock.get_fps()
+    pygame.display.set_caption(f"edit - {app_save_filepath} - {fps : 0.1f}")
     delta_time_seconds = time.time() - previous_frame_time
     previous_frame_time = time.time()
 

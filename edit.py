@@ -55,28 +55,40 @@ current_buffer_colors_index = 0
 for _ in range(10):
     buffer_colors.append(pygame.Color(255, 255, 255, 255))
 
-editing_surface = pygame.Surface((64, 64))
+editing_surface = pygame.Surface((64, 64), pygame.SRCALPHA)
 editing_surface_size = (32, 32)
 editing_surface_zoom = 30
 editing_surface_max_zoom = 100
 
+display_color_rect_horizontal_gap = 5 # pixels
+display_color_rect_screen_verticle_gap = 10 # pixels
+
 app_font_size = 20
 app_font_object = pygame.font.Font(None, app_font_size)
+
+app_text_background_alpha = 150
 
 app_save_filepath = "a.png" # a.png for testing (acctual should be None)
 app_state_unsaved_changes = False
 
+app_state_mouse_main_click_current_frame = False
+app_state_mouse_main_click_held = False
+app_mouse_last_recored_position = (0, 0)
+
 screen_size = (640, 480)
 screen = pygame.display.set_mode(screen_size, pygame.RESIZABLE)
 bg_color = (100, 100, 100)
-mode_text_color = (0, 0, 0)
+app_text_color = (0, 0, 0)
+app_text_background_color = (255 - app_text_color[0], 255 - app_text_color[1], 255 - app_text_color[2], 100)
 max_fps = 60
 
 app_state_move_camera = False
 camera_position = [0, 0]
 def camera_transform(vec2f_position):
-    return (vec2f_position[0] - camera_position[0] + screen_size[0]//2, vec2f_position[1] - camera_position[1] + screen_size[1]//2)
+    return (vec2f_position[0] - camera_position[0] + screen_size[0]/2, vec2f_position[1] - camera_position[1] + screen_size[1]/2)
 
+def camera_reverse_transform(vec2f_position):
+    return (vec2f_position[0] + camera_position[0] - screen_size[0]/2, vec2f_position[1] + camera_position[1] - screen_size[1]/2)
 error_string = ""
 
 previous_frame_time = time.time()
@@ -87,6 +99,8 @@ while True:
     pygame.display.set_caption(f"edit - {app_save_filepath} - {fps : 0.1f}")
     delta_time_seconds = time.time() - previous_frame_time
     previous_frame_time = time.time()
+
+    app_state_mouse_main_click_current_frame = False
 
     for event in pygame.event.get():
         if (event.type == pygame.QUIT or current_mode == mode_type_normal and event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
@@ -103,6 +117,16 @@ while True:
         if (event.type == pygame.MOUSEWHEEL):
             if (0 < editing_surface_zoom + event.y < editing_surface_max_zoom):
                 editing_surface_zoom += event.y
+
+        if (event.type == pygame.MOUSEBUTTONDOWN):
+            if (event.button == 0):
+                log.output(logger.LOG_level("INFO"), f"Clicked main mouse button")
+                app_state_mouse_main_click_current_frame = True
+                app_state_mouse_main_click_held = True
+
+        if (event.type == pygame.MOUSEBUTTONUP):
+            if (event.button == 0):
+                app_state_mouse_main_click_held = False
 
         if (event.type == pygame.KEYDOWN):
 
@@ -219,6 +243,8 @@ while True:
                                 final_color.a = int(current_number_str)
 
                 if (current_mode == mode_type_resize_editing_surface):
+                    log.output(logger.LOG_level("INFO"), f"resize mode not implemented yet")
+                    current_mode = mode_type_resize_editing_surface
                     pass
 
             if (event.key == pygame.K_0 or event.key == pygame.K_KP0):
@@ -426,7 +452,6 @@ while True:
                     log.output(logger.LOG_level("INFO"), f"Changed mode to normal from set color")
 
         if (event.type == pygame.KEYUP):
-
             if (current_mode == mode_type_normal and event.key == pygame.K_m):
                 app_state_move_camera = False
 
@@ -457,8 +482,6 @@ while True:
         pygame.draw.line(screen, editing_surface_negated_color, camera_transform((0, y*editing_surface_screen_proportionality_xy[1]*editing_surface_zoom)), camera_transform((transformed_editing_surface.get_width(), y*editing_surface_screen_proportionality_xy[1]*editing_surface_zoom)))
     
     display_color_rect_size = (screen_size[0]//25, screen_size[1]//25)
-    display_color_rect_horizontal_gap = 5 # pixels
-    display_color_rect_screen_verticle_gap = 10 # pixels
     display_color_rect_start_y_position = screen_size[0] - (display_color_rect_size[0]+display_color_rect_horizontal_gap)*10 - display_color_rect_horizontal_gap
 
     for display_color_index in range(10):
@@ -467,21 +490,19 @@ while True:
         if (display_color_index == current_buffer_colors_index):
             pygame.draw.rect(screen, (0, 0, 0), ((display_color_rect_start_y_position + display_color_index*(display_color_rect_size[0]+display_color_rect_horizontal_gap) - 5, display_color_rect_screen_verticle_gap -5), (display_color_rect_size[0]+5, display_color_rect_size[1]+5)), width = 4)
 
-    display_mode_text_surface = app_font_object.render(f"--{get_mode_type_code_to_str(current_mode)}--", True, (mode_text_color))
+
+    display_mode_text_surface = app_font_object.render(f"--{get_mode_type_code_to_str(current_mode)}--", True, (app_text_color))
     display_mode_text_background_surface = pygame.Surface((display_mode_text_surface.get_width(), display_mode_text_surface.get_height()))
-    display_mode_text_background_color = (255 - mode_text_color[0], 255 - mode_text_color[1], 255 - mode_text_color[2], 100)
-    display_mode_text_background_surface.fill(display_mode_text_background_color)
-    display_mode_text_background_surface.set_alpha(100)
+    display_mode_text_background_surface.fill(app_text_background_color)
+    display_mode_text_background_surface.set_alpha(app_text_background_alpha)
     screen.blit(display_mode_text_background_surface, (screen_size[0]//8, screen_size[1] - display_mode_text_surface.get_height() -5))
-    #pygame.draw.rect(screen, (255 - mode_text_color[0], 255 - mode_text_color[1], 255 - mode_text_color[2], 100), (screen_size[0]//8, screen_size[1] - display_mode_text_surface.get_height() -5, display_mode_text_surface.get_width(), display_mode_text_surface.get_height()))
     screen.blit(display_mode_text_surface, (screen_size[0]//8, screen_size[1] - display_mode_text_surface.get_height() -5))
 
-    display_input_buffer_surface = app_font_object.render(f"{current_input_buffer}", True, (mode_text_color))
+    display_input_buffer_surface = app_font_object.render(f"{current_input_buffer}", True, (app_text_color))
 
     display_input_buffer_background_surface = pygame.Surface((display_input_buffer_surface.get_width(), display_input_buffer_surface.get_height()))
-    display_input_buffer_background_color = display_mode_text_background_color
-    display_input_buffer_background_surface.fill(display_input_buffer_background_color)
-    display_input_buffer_background_surface.set_alpha(100)
+    display_input_buffer_background_surface.fill(app_text_background_color)
+    display_input_buffer_background_surface.set_alpha(app_text_background_alpha)
     screen.blit(display_input_buffer_background_surface, (screen_size[0] - display_input_buffer_surface.get_width() - 5, screen_size[1] - display_input_buffer_surface.get_height() -5))
     screen.blit(display_input_buffer_surface, (screen_size[0] - display_input_buffer_surface.get_width() - 5, screen_size[1] - display_input_buffer_surface.get_height() -5))
 

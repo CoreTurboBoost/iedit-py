@@ -131,7 +131,7 @@ class LOG (object):
 
         self.print_buffer.clear()
     
-    def output ( self,  level : int, *data ):
+    def output ( self,  level : int, *data, write_file_path = None : str ):
 ##        if len(data) == 1:
 ##            data = data[0]
 ##        elif len(data) > 1:
@@ -172,13 +172,29 @@ class LOG (object):
                                 else:
                                     break
                             print(self.print_buffer[0], " ( x" + str(count) + " ) ")
+                            if (write_file_path != None):
+                                fileh = open(write_file_path, "a")
+                                fileh.write(f"{self.print_buffer[0]} ( x{count} )")
+                                fileh.write("\n")
+                                fileh.close()
                             if not(self.print_buffer[-1] in self.print_buffer[len(self.print_buffer)-1:]):
                                 print(self.print_buffer[-1])
+                                if (write_file_path != None):
+                                    fileh = open(write_file_path, "a")
+                                    fileh.write(f"{self.print_buffer[-1]}")
+                                    fileh.write("\n")
+                                    fileh.close()
                             self.print_buffer.clear()
                         
                 else:
                     print(out)
                     self.print_buffer.pop()
+                    if (write_file_path != None):
+                        file_mode = "a"
+                        fileh = open(write_file_path, file_mode)
+                        fileh.write(out)
+                        fileh.write("\n")
+                        fileh.close()
                 if level <= self.stop_on_level:
                     sys.exit()
     

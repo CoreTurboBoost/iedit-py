@@ -131,7 +131,7 @@ class LOG (object):
 
         self.print_buffer.clear()
     
-    def output ( self,  level : int, *data, write_file_path = None : str ):
+    def output ( self,  level : int, *data, write_file_path = None ):
 ##        if len(data) == 1:
 ##            data = data[0]
 ##        elif len(data) > 1:

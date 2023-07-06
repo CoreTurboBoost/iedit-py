@@ -6,7 +6,7 @@ import time
 import logger
 
 VERSION_MAJOR = 0
-VERSION_MINOR = 2
+VERSION_MINOR = 3
 VERSION_PATCH = 0
 
 log = logger.LOG()
@@ -17,9 +17,73 @@ pygame.init()
 argv = sys.argv
 argc = len(argv)
 
+if (argc == 1):
+    print(f"python3 {argv[0]} --help")
+
 if (argc > 1):
     if (argv[1] == "--help" or argv[1] == "-h"):
-        print("Description: Pixrl art editor with key bindings")
+        print( "Description: Pixel art editor with key bindings")
+        print(f"\'python3 {argv[0]} --version \' for version infomation")
+        print(f"Usage: python3 {argv[0]}")
+        print(f"Usage: python3 {argv[0]} [Options]")
+        print(f"Options:")
+        print(f"  -i [file-path]  - input image file from [file-path]")
+        print(f"  -o [file-path]  - output image file to [file-path]")
+        sys.exit()
+    if (argv[1] == "--version"):
+        print(f"VERSION: {VERSION_MAJOR}.{VERSION_MINOR}.{VERSION_PATCH}")
+        sys.exit()
+
+input_file_path = None
+output_file_path = None
+arg_skip_count = 0
+for arg_index in range(1, argc):
+    if (arg_skip_count > 0):
+        arg_skip_count -= 1
+        continue
+
+    arg = argv[arg_index]
+
+    if (arg == "-i"):
+        if (arg_index +1 >= argc):
+            print("[{arg_index+1}] option \'-i\' needs argument [file-path]")
+            sys.exit()
+        if (input_file_path != None):
+            print("[{arg_index+1}] option \'-i\' can only be given once, (app only supports single file)")
+            sys.exit()
+        input_file_path = argv[arg_index+1]
+    elif (arg == "-o"):
+        if (arg_index +1 >= argc):
+            print("[{arg_index+1}] option \'-o\' needs argument [file-path]")
+            sys.exit()
+        if (input_file_path != None):
+            print("[{arg_index+1}] option \'-o\' can only be given once, (app only supports single file)")
+            sys.exit()
+        output_file_path = argv[arg_index+1]
+    else:
+        print("[{arg_index+1}] option \'{arg}\' is not recognised")
+
+if (input_file_path != None):
+    try:
+        input_surface = pygame.image.load(input_file_path)
+    except FileNotFoundError:
+        print("Could not load file \'{input_file_path}\'")
+        sys.exit()
+    editing_surface = input_surface
+    log.output(logger.LOG_level("INFO"), f"editing surface: {editing_surface}")
+
+else:
+    editing_surface = pygame.Surface((64, 64), pygame.SRCALPHA)
+editing_surface_zoom = 30
+editing_surface_max_zoom = 100
+
+if (output_file_path != None):
+    app_save_filepath_editing_surface = output_file_path
+
+else:
+    print("Output file path set to \'a.png\'")
+    app_save_filepath_editing_surface = "a.png"
+app_state_unsaved_changes = False
 
 key_select_mode_select_color = pygame.K_s
 key_select_mode_set_color = pygame.K_c
@@ -57,11 +121,6 @@ current_buffer_colors_index = 0
 for _ in range(10):
     buffer_colors.append(pygame.Color(255, 255, 255, 255))
 
-editing_surface = pygame.Surface((64, 64), pygame.SRCALPHA)
-editing_surface_size = (32, 32)
-editing_surface_zoom = 30
-editing_surface_max_zoom = 100
-
 buffer_undo_editing_surface_edit = []
 buffer_undo_max_size = 512
 
@@ -72,9 +131,6 @@ app_font_size = 20
 app_font_object = pygame.font.Font(None, app_font_size)
 
 app_text_background_alpha = 150
-
-app_save_filepath_editing_surface = "a.png" # a.png for testing (acctual should be None)
-app_state_unsaved_changes = False
 
 app_state_mouse_main_click_current_frame = False
 app_state_mouse_main_click_held = False

@@ -6,7 +6,7 @@ import time
 import logger
 
 VERSION_MAJOR = 0
-VERSION_MINOR = 3
+VERSION_MINOR = 4
 VERSION_PATCH = 0
 
 log = logger.LOG()

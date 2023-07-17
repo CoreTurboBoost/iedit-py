@@ -7,7 +7,7 @@ import logger
 
 VERSION_MAJOR = 0
 VERSION_MINOR = 4
-VERSION_PATCH = 0
+VERSION_PATCH = 1
 
 log = logger.LOG()
 log.set_warnlevel(logger.LOG_level("INFO"))
@@ -46,28 +46,28 @@ for arg_index in range(1, argc):
 
     if (arg == "-i"):
         if (arg_index +1 >= argc):
-            print("[{arg_index+1}] option \'-i\' needs argument [file-path]")
+            print(f"[{arg_index+1}] option \'-i\' needs argument [file-path]")
             sys.exit()
         if (input_file_path != None):
-            print("[{arg_index+1}] option \'-i\' can only be given once, (app only supports single file)")
+            print(f"[{arg_index+1}] option \'-i\' can only be given once, (app only supports single file)")
             sys.exit()
         input_file_path = argv[arg_index+1]
     elif (arg == "-o"):
         if (arg_index +1 >= argc):
-            print("[{arg_index+1}] option \'-o\' needs argument [file-path]")
+            print(f"[{arg_index+1}] option \'-o\' needs argument [file-path]")
             sys.exit()
         if (input_file_path != None):
-            print("[{arg_index+1}] option \'-o\' can only be given once, (app only supports single file)")
+            print(f"[{arg_index+1}] option \'-o\' can only be given once, (app only supports single file)")
             sys.exit()
         output_file_path = argv[arg_index+1]
     else:
-        print("[{arg_index+1}] option \'{arg}\' is not recognised")
+        print(f"[{arg_index+1}] option \'{arg}\' is not recognised")
 
 if (input_file_path != None):
     try:
         input_surface = pygame.image.load(input_file_path)
     except FileNotFoundError:
-        print("Could not load file \'{input_file_path}\'")
+        print(f"Could not load file \'{input_file_path}\'")
         sys.exit()
     editing_surface = input_surface
     log.output(logger.LOG_level("INFO"), f"editing surface: {editing_surface}")

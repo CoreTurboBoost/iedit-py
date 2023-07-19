@@ -7,7 +7,7 @@ import logger
 
 VERSION_MAJOR = 0
 VERSION_MINOR = 4
-VERSION_PATCH = 1
+VERSION_PATCH = 2
 
 log = logger.LOG()
 log.set_warnlevel(logger.LOG_level("INFO"))

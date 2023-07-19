@@ -675,6 +675,14 @@ while True:
     screen.blit(display_input_buffer_background_surface, (screen_size[0] - display_input_buffer_surface.get_width() - 5, screen_size[1] - display_input_buffer_surface.get_height() -5))
     screen.blit(display_input_buffer_surface, (screen_size[0] - display_input_buffer_surface.get_width() - 5, screen_size[1] - display_input_buffer_surface.get_height() -5))
 
+    if (current_mode == mode_type_resize_editing_surface):
+        editing_surface_size_text_surface = app_font_object.render(f"{editing_surface.get_width()}w {editing_surface.get_height()}h", True, (app_text_color))
+        editing_surface_size_text_background_surface = pygame.Surface((editing_surface_size_text_surface.get_width(), editing_surface_size_text_surface.get_height()))
+        editing_surface_size_text_background_surface.fill(app_text_background_color)
+        editing_surface_size_text_background_surface.set_alpha(app_text_background_alpha)
+        screen.blit(editing_surface_size_text_background_surface, (5, 5))
+        screen.blit(editing_surface_size_text_surface, (5, 5))
+
     # display errors above input buffer
 
     #debug

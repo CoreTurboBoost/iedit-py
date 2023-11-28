@@ -14,6 +14,16 @@ log.set_warnlevel(logger.LOG_level("INFO"))
 
 pygame.init()
 
+key_select_mode_select_color = pygame.K_s
+key_select_mode_set_color = pygame.K_c
+key_resize_editing_surface = pygame.K_r
+key_undo_editing_surface_modification = pygame.K_u
+key_save_editing_surface = pygame.K_w
+key_confirm = pygame.K_RETURN
+
+editing_surface_zoom = 30
+editing_surface_max_zoom = 100
+
 argv = sys.argv
 argc = len(argv)
 
@@ -29,6 +39,7 @@ if (argc > 1):
         print(f"Options:")
         print(f"  -i [file-path]  - input image file from [file-path]")
         print(f"  -o [file-path]  - output image file to [file-path]")
+        print(f"  --key-bindings  - output key bindings and exit")
         sys.exit()
     if (argv[1] == "--version"):
         print(f"VERSION: {VERSION_MAJOR}.{VERSION_MINOR}.{VERSION_PATCH}")
@@ -60,6 +71,15 @@ for arg_index in range(1, argc):
             print(f"[{arg_index+1}] option \'-o\' can only be given once, (app only supports single file)")
             sys.exit()
         output_file_path = argv[arg_index+1]
+    elif (arg == "--key-bindings"):
+        print("Key bindings (In normal mode):")
+        print(" - select color (In normal mode): ", pygame.key.name(key_select_mode_select_color))
+        print(" - set color (In normal mode): ", pygame.key.name(key_select_mode_set_color))
+        print(" - resize editing surface (In normal mode): ", pygame.key.name(key_resize_editing_surface))
+        print(" - undo editing surface modification (In normal mode): ", pygame.key.name(key_undo_editing_surface_modification))
+        print(" - save editing surface (In normal mode): ", pygame.key.name(key_save_editing_surface))
+        print(" - confirm (In any mode, used for prompts): ", pygame.key.name(key_confirm))
+        sys.exit()
     else:
         print(f"[{arg_index+1}] option \'{arg}\' is not recognised")
 
@@ -77,8 +97,6 @@ if (input_file_path != None):
 
 else:
     editing_surface = pygame.Surface((64, 64), pygame.SRCALPHA)
-editing_surface_zoom = 30
-editing_surface_max_zoom = 100
 
 if (output_file_path != None):
     app_save_filepath_editing_surface = output_file_path
@@ -87,13 +105,6 @@ else:
     print("Output file path set to \'a.png\'")
     app_save_filepath_editing_surface = "a.png"
 app_state_unsaved_changes = False
-
-key_select_mode_select_color = pygame.K_s
-key_select_mode_set_color = pygame.K_c
-key_resize_editing_surface = pygame.K_r
-key_undo_editing_surface_modification = pygame.K_u
-key_save_editing_surface = pygame.K_w
-key_confirm = pygame.K_RETURN
 
 mode_type_normal = 0
 mode_type_select_color = 1

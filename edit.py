@@ -69,6 +69,9 @@ if (input_file_path != None):
     except FileNotFoundError:
         print(f"Could not load file \'{input_file_path}\'")
         sys.exit()
+    except pygame.error:
+        print(f"Pygame could not load in the image, {sys.exc_info()[1]}")
+        sys.exit()
     editing_surface = input_surface
     log.output(logger.LOG_level("INFO"), f"editing surface: {editing_surface}")
 

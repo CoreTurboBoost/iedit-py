@@ -53,7 +53,7 @@ def debug_info ( msg : str , relative_frame = 1):
 
 class LOG (object):
     def __init__ (self, file = None):
-        self.warnlevel = 2
+        self.warnlevel = LOG_level("INFO")
         self.stop_on_level = -1
         self.output_code = False # where to output the code on the specified line or not 
         self.ignored_files = []
@@ -174,14 +174,14 @@ class LOG (object):
                             print(self.print_buffer[0], " ( x" + str(count) + " ) ")
                             if (write_file_path != None):
                                 fileh = open(write_file_path, "a")
-                                fileh.write(f"{self.print_buffer[0]} ( x{count} )")
+                                fileh.write(str(self.print_buffer[0]), "(", "x"+str(count), ")")
                                 fileh.write("\n")
                                 fileh.close()
                             if not(self.print_buffer[-1] in self.print_buffer[len(self.print_buffer)-1:]):
                                 print(self.print_buffer[-1])
                                 if (write_file_path != None):
                                     fileh = open(write_file_path, "a")
-                                    fileh.write(f"{self.print_buffer[-1]}")
+                                    fileh.write(str(self.print_buffer[-1]))
                                     fileh.write("\n")
                                     fileh.close()
                             self.print_buffer.clear()

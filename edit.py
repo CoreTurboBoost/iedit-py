@@ -1,9 +1,14 @@
+#!/bin/env python3
 
 import pygame
 import sys
 import time
 
 import logger
+
+if (__name__ != "__main__"):
+    print("Need to run directly")
+    sys.exit(1)
 
 VERSION_MAJOR = 0
 VERSION_MINOR = 4
@@ -20,6 +25,7 @@ key_resize_editing_surface = pygame.K_r
 key_undo_editing_surface_modification = pygame.K_u
 key_save_editing_surface = pygame.K_w
 key_confirm = pygame.K_RETURN
+key_move_camera = pygame.K_m
 
 editing_surface_zoom = 30
 editing_surface_max_zoom = 100
@@ -223,7 +229,7 @@ while True:
                 current_mode = mode_type_resize_editing_surface
                 log.output(logger.LOG_level("INFO"), f"Entered mode {get_mode_type_code_to_str(current_mode)}")
                 current_input_buffer = ""
-            if (current_mode == mode_type_normal and event.key == pygame.K_m):
+            if (current_mode == mode_type_normal and event.key == key_move_camera):
                 app_state_move_camera = True
             if (current_mode == mode_type_normal and event.key == key_undo_editing_surface_modification):
                 if (len(buffer_undo_editing_surface_edit) > 0):

@@ -46,6 +46,8 @@ if (argc > 1):
         print(f"  -i [file-path]  - input image file from [file-path]")
         print(f"  -o [file-path]  - output image file to [file-path]")
         print(f"  --key-bindings  - output key bindings and exit")
+        print(f"Note:")
+        print(f" Can only use -i or -o alone (not both at same time)")
         sys.exit()
     if (argv[1] == "--version"):
         print(f"VERSION: {VERSION_MAJOR}.{VERSION_MINOR}.{VERSION_PATCH}")

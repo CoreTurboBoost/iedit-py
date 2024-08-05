@@ -4,6 +4,8 @@ import pygame
 import sys
 import time
 
+# TODO: Improve the undo of bucket fills, by using a mask, instead of storing an full copy of the surface.
+
 import logger
 
 if (__name__ != "__main__"):
@@ -136,6 +138,7 @@ def get_mode_type_code_to_str(mode_type_code):
         return "unknown"
 
 def paint_tool_bucket(surface: pygame.Surface, start_point: pygame.math.Vector2, new_color: pygame.Color) -> None:
+    log.output(logger.LOG_level("INFO"), "Paint bucket started to draw")
     have_been_stack = [start_point]
     try:
         search_color = surface.get_at((start_point.x, start_point.y))
@@ -144,6 +147,7 @@ def paint_tool_bucket(surface: pygame.Surface, start_point: pygame.math.Vector2,
     surface.set_at(start_point, new_color)
     done = False
     while len(have_been_stack) != 0:
+        log.output(logger.LOG_level("INFO"), f"{len(have_been_stack)} elements in the have_been_visited_stack")
         current_pixel_pos = have_been_stack[-1]
         if (current_pixel_pos[0]-1 >= 0):
             search_pixel_pos = (current_pixel_pos[0]-1, current_pixel_pos[1])
@@ -170,6 +174,7 @@ def paint_tool_bucket(surface: pygame.Surface, start_point: pygame.math.Vector2,
                 have_been_stack.append(search_pixel_pos)
                 continue
         have_been_stack.pop()
+    log.output(logger.LOG_level("INFO"), "paint bucket has finished drawing")
 
 current_input_buffer = ""
 max_input_buffer_len = 16
@@ -180,8 +185,40 @@ current_buffer_colors_index = 0
 for _ in range(10):
     buffer_colors.append(pygame.Color(255, 255, 255, 255))
 
-buffer_undo_editing_surface_edit = []
+class UndoObject:
+    def __init__(self):
+        pass
+class UndoSinglePixel(UndoObject):
+    def __init__(self, pixel_pos: pygame.math.Vector2, color: pygame.Color):
+        self.pixel_position = pixel_pos
+        self.color = color
+    def __str__(self):
+        return f"UndoSinglePixel(pixel_pos={self.pixel_position}, color={self.color})"
+class UndoBucketFill(UndoObject):
+    def __init__(self, pixel_pos: pygame.math.Vector2, old_color: pygame.Color, temp_surface: pygame.Surface):
+        self.pixel_position: pygame.math.Vector2 = pygame.math.Vector2(pixel_pos)
+        self.old_color = old_color
+        self.temp_surface: pygame.Surface = temp_surface
+    def __str__(self):
+        return "UndoBucketFill(pixel_pos={self.pixel_position}, old_color={self.old_color})"
+class UndoResize(UndoObject):
+    def __init__(self, old_surface: pygame.Surface):
+        self.old_surface: pygame.Surface = old_surface
+    def __str__(self):
+        return "UndoResize(old_surface={self.old_surface})"
+buffer_undo_objects = []
 buffer_undo_max_size = 512
+
+def add_to_undo_buffer(undo_object: UndoObject):
+    global buffer_undo_objects
+    buffer_undo_objects.append(undo_object)
+    if (len(buffer_undo_objects) > buffer_undo_max_size):
+        buffer_undo_objects.pop() # Might change to make more robust
+def pop_from_undo_buffer() -> UndoObject: # Or return None when empty
+    global buffer_undo_objects
+    if len(buffer_undo_objects) == 0:
+        return None
+    return buffer_undo_objects.pop()
 
 display_color_rect_horizontal_gap = 5 # pixels
 display_color_rect_screen_verticle_gap = 10 # pixels
@@ -271,10 +308,15 @@ while True:
             if (current_mode == mode_type_normal and event.key == key_move_camera):
                 app_state_move_camera = True
             if (current_mode == mode_type_normal and event.key == key_undo_editing_surface_modification):
-                if (len(buffer_undo_editing_surface_edit) > 0):
-                    undo_package = buffer_undo_editing_surface_edit.pop(0)
-                    log.output(logger.LOG_level("INFO"), f"undoing package ({undo_package[0]}, {undo_package[1]})")
-                    editing_surface.set_at(undo_package[0], undo_package[1])
+                undo_package = pop_from_undo_buffer()
+                if (undo_package != None):
+                    log.output(logger.LOG_level("INFO"), f"undoing package {undo_package}")
+                    if isinstance(undo_package, UndoSinglePixel):
+                        editing_surface.set_at(undo_package.pixel_position, undo_package.color)
+                    if isinstance(undo_package, UndoBucketFill):
+                        editing_surface = undo_package.temp_surface
+                    if isinstance(undo_package, UndoResize):
+                        editing_surface = undo_package.old_surface
                     log.output(logger.LOG_level("INFO"), f"Applied undo")
             if (current_mode == mode_type_normal and event.key == key_save_editing_surface):
                 pygame.image.save(editing_surface, app_save_filepath_editing_surface)
@@ -285,6 +327,9 @@ while True:
                 # assumes editing_surface_screen_proportionality_xy != 0
                 # assumes editing_surface_zoom != 0
                 mouse_position_on_editing_surface_position = (int(reverse_camera_mouse_position[0]/(editing_surface_screen_proportionality_xy[0]*editing_surface_zoom)), int(reverse_camera_mouse_position[1]/(editing_surface_screen_proportionality_xy[1]*editing_surface_zoom)))
+
+                undo_object = UndoBucketFill(pygame.math.Vector2(mouse_position_on_editing_surface_position), editing_surface.get_at(mouse_position_on_editing_surface_position), editing_surface.copy())
+                add_to_undo_buffer(undo_object)
                 fill_color = buffer_colors[current_buffer_colors_index]
                 paint_tool_bucket(editing_surface, pygame.math.Vector2(mouse_position_on_editing_surface_position), fill_color)
             if (event.key == key_confirm):	
@@ -382,8 +427,10 @@ while True:
                                 final_color.a = int(current_number_str)
 
                 if (current_mode == mode_type_resize_editing_surface):
-                    log.output(logger.LOG_level("INFO"), f"resize mode not implemented yet")
                     current_mode = mode_type_normal
+
+                    undo_object = UndoResize(editing_surface)
+                    add_to_undo_buffer(undo_object)
 
                     width = editing_surface.get_width()
                     height = editing_surface.get_height()
@@ -683,9 +730,8 @@ while True:
             log.output(logger.LOG_level("INFO"), f"Data: mouse_pos:{mouse_position}, screen_size:{screen_size}, camera_pos:{camera_position}, revers_cam_pos:{reverse_camera_mouse_position}, proprotionality_xy:{editing_surface_screen_proportionality_xy}, zoom:{editing_surface_zoom}", write_file_path = "errors.txt")
         elif (buffer_colors[current_buffer_colors_index] != editing_surface.get_at(mouse_position_on_editing_surface_position)):
             color_copy = pygame.Color(editing_surface.get_at(mouse_position_on_editing_surface_position))
-            buffer_undo_editing_surface_edit.insert(0, (mouse_position_on_editing_surface_position, color_copy))
-            if (len(buffer_undo_editing_surface_edit) > buffer_undo_max_size):
-                buffer_undo_editing_surface_edit.pop(-1)
+            undo_object = UndoSinglePixel(mouse_position_on_editing_surface_position, color_copy)
+            add_to_undo_buffer(undo_object)
             log.output(logger.LOG_level("INFO"), f"mouse_position_on_surface: {mouse_position_on_editing_surface_position}")
             log.output(logger.LOG_level("INFO"), f"setting color: {buffer_colors[current_buffer_colors_index]}, at {mouse_position_on_editing_surface_position}")
 

@@ -11,8 +11,8 @@ if (__name__ != "__main__"):
     sys.exit(1)
 
 VERSION_MAJOR = 0
-VERSION_MINOR = 4
-VERSION_PATCH = 2
+VERSION_MINOR = 5
+VERSION_PATCH = 0
 
 log = logger.LOG()
 log.set_warnlevel(logger.LOG_level("INFO"))
@@ -26,6 +26,7 @@ key_undo_editing_surface_modification = pygame.K_u
 key_save_editing_surface = pygame.K_w
 key_confirm = pygame.K_RETURN
 key_move_camera = pygame.K_m
+key_fill_bucket = pygame.K_f
 
 editing_surface_zoom = 30
 editing_surface_max_zoom = 100
@@ -133,6 +134,42 @@ def get_mode_type_code_to_str(mode_type_code):
         return "resize surface"
     else:
         return "unknown"
+
+def paint_tool_bucket(surface: pygame.Surface, start_point: pygame.math.Vector2, new_color: pygame.Color) -> None:
+    have_been_stack = [start_point]
+    try:
+        search_color = surface.get_at((start_point.x, start_point.y))
+    except IndexError:
+        return None
+    surface.set_at(start_point, new_color)
+    done = False
+    while len(have_been_stack) != 0:
+        current_pixel_pos = have_been_stack[-1]
+        if (current_pixel_pos[0]-1 >= 0):
+            search_pixel_pos = (current_pixel_pos[0]-1, current_pixel_pos[1])
+            if (surface.get_at(search_pixel_pos) == search_color and not(search_pixel_pos in have_been_stack)):
+                surface.set_at(search_pixel_pos, new_color)
+                have_been_stack.append(search_pixel_pos)
+                continue
+        if (current_pixel_pos[1]-1 >= 0):
+            search_pixel_pos = (current_pixel_pos[0], current_pixel_pos[1]-1)
+            if (surface.get_at(search_pixel_pos) == search_color and not(search_pixel_pos in have_been_stack)):
+                surface.set_at(search_pixel_pos, new_color)
+                have_been_stack.append(search_pixel_pos)
+                continue
+        if (current_pixel_pos[0]+1 < surface.get_width()):
+            search_pixel_pos = (current_pixel_pos[0]+1, current_pixel_pos[1])
+            if (surface.get_at(search_pixel_pos) == search_color and not(search_pixel_pos in have_been_stack)):
+                surface.set_at(search_pixel_pos, new_color)
+                have_been_stack.append(search_pixel_pos)
+                continue
+        if (current_pixel_pos[1]+1 < surface.get_height()):
+            search_pixel_pos = (current_pixel_pos[0], current_pixel_pos[1]+1)
+            if (surface.get_at(search_pixel_pos) == search_color and not(search_pixel_pos in have_been_stack)):
+                surface.set_at(search_pixel_pos, new_color)
+                have_been_stack.append(search_pixel_pos)
+                continue
+        have_been_stack.pop()
 
 current_input_buffer = ""
 max_input_buffer_len = 16
@@ -242,6 +279,14 @@ while True:
             if (current_mode == mode_type_normal and event.key == key_save_editing_surface):
                 pygame.image.save(editing_surface, app_save_filepath_editing_surface)
                 log.output(logger.LOG_level("INFO"), f"Saved current editing surface to {app_save_filepath_editing_surface}")
+            if (current_mode == mode_type_normal and event.key == key_fill_bucket):
+                mouse_position = pygame.mouse.get_pos()
+                reverse_camera_mouse_position = camera_reverse_transform(mouse_position)
+                # assumes editing_surface_screen_proportionality_xy != 0
+                # assumes editing_surface_zoom != 0
+                mouse_position_on_editing_surface_position = (int(reverse_camera_mouse_position[0]/(editing_surface_screen_proportionality_xy[0]*editing_surface_zoom)), int(reverse_camera_mouse_position[1]/(editing_surface_screen_proportionality_xy[1]*editing_surface_zoom)))
+                fill_color = buffer_colors[current_buffer_colors_index]
+                paint_tool_bucket(editing_surface, pygame.math.Vector2(mouse_position_on_editing_surface_position), fill_color)
             if (event.key == key_confirm):	
                 if (current_mode == mode_type_select_color):
                     current_mode = mode_type_normal

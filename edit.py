@@ -12,7 +12,7 @@ if (__name__ != "__main__"):
 
 VERSION_MAJOR = 0
 VERSION_MINOR = 6
-VERSION_PATCH = 0
+VERSION_PATCH = 1
 
 log = logger.LOG()
 log.set_warnlevel(logger.LOG_level("INFO"))
@@ -27,6 +27,7 @@ key_save_editing_surface = pygame.K_w
 key_confirm = pygame.K_RETURN
 key_move_camera = pygame.K_m
 key_fill_bucket = pygame.K_f
+key_quit = pygame.K_q
 
 editing_surface_zoom = 30
 editing_surface_max_zoom = 100
@@ -89,6 +90,7 @@ for arg_index in range(1, argc):
         print(" - save editing surface (In normal mode): ", pygame.key.name(key_save_editing_surface))
         print(" - confirm (In any mode, used for prompts): ", pygame.key.name(key_confirm))
         print(" - fill bucket paint brush (In normal mode): " , pygame.key.name(key_fill_bucket))
+        print(" - quit program without saving (or save warning) (In normal mode): ", pygame.key.name(key_quit))
         sys.exit()
     else:
         print(f"[{arg_index+1}] option \'{arg}\' is not recognised")
@@ -272,7 +274,7 @@ while True:
     app_state_mouse_main_click_current_frame = False
 
     for event in pygame.event.get():
-        if (event.type == pygame.QUIT or current_mode == mode_type_normal and event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+        if (event.type == pygame.QUIT or current_mode == mode_type_normal and event.type == pygame.KEYDOWN and event.key == key_quit):
             pygame.quit()
             sys.exit()
 

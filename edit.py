@@ -4,8 +4,6 @@ import pygame
 import sys
 import time
 
-# TODO: Improve the undo of bucket fills, by using a mask, instead of storing an full copy of the surface.
-
 import logger
 
 if (__name__ != "__main__"):
@@ -137,8 +135,10 @@ def get_mode_type_code_to_str(mode_type_code):
     else:
         return "unknown"
 
-def paint_tool_bucket(surface: pygame.Surface, start_point: pygame.math.Vector2, new_color: pygame.Color) -> None:
+def paint_tool_bucket(surface: pygame.Surface, start_point: pygame.math.Vector2, new_color: pygame.Color, mask=None) -> pygame.Mask:
     log.output(logger.LOG_level("INFO"), "Paint bucket started to draw")
+    fill_mask = pygame.Mask(surface.get_size())
+    fill_mask.clear()
     have_been_stack = [start_point]
     try:
         search_color = surface.get_at((start_point.x, start_point.y))
@@ -152,29 +152,38 @@ def paint_tool_bucket(surface: pygame.Surface, start_point: pygame.math.Vector2,
         if (current_pixel_pos[0]-1 >= 0):
             search_pixel_pos = (current_pixel_pos[0]-1, current_pixel_pos[1])
             if (surface.get_at(search_pixel_pos) == search_color and not(search_pixel_pos in have_been_stack)):
-                surface.set_at(search_pixel_pos, new_color)
-                have_been_stack.append(search_pixel_pos)
-                continue
+                if (mask == None or mask.get_at(search_pixel_pos)):
+                    surface.set_at(search_pixel_pos, new_color)
+                    fill_mask.set_at(search_pixel_pos, 1)
+                    have_been_stack.append(search_pixel_pos)
+                    continue
         if (current_pixel_pos[1]-1 >= 0):
             search_pixel_pos = (current_pixel_pos[0], current_pixel_pos[1]-1)
             if (surface.get_at(search_pixel_pos) == search_color and not(search_pixel_pos in have_been_stack)):
-                surface.set_at(search_pixel_pos, new_color)
-                have_been_stack.append(search_pixel_pos)
-                continue
+                if (mask == None or mask.get_at(search_pixel_pos)):
+                    surface.set_at(search_pixel_pos, new_color)
+                    fill_mask.set_at(search_pixel_pos, 1)
+                    have_been_stack.append(search_pixel_pos)
+                    continue
         if (current_pixel_pos[0]+1 < surface.get_width()):
             search_pixel_pos = (current_pixel_pos[0]+1, current_pixel_pos[1])
             if (surface.get_at(search_pixel_pos) == search_color and not(search_pixel_pos in have_been_stack)):
-                surface.set_at(search_pixel_pos, new_color)
-                have_been_stack.append(search_pixel_pos)
-                continue
+                if (mask == None or mask.get_at(search_pixel_pos)):
+                    surface.set_at(search_pixel_pos, new_color)
+                    fill_mask.set_at(search_pixel_pos, 1)
+                    have_been_stack.append(search_pixel_pos)
+                    continue
         if (current_pixel_pos[1]+1 < surface.get_height()):
             search_pixel_pos = (current_pixel_pos[0], current_pixel_pos[1]+1)
             if (surface.get_at(search_pixel_pos) == search_color and not(search_pixel_pos in have_been_stack)):
-                surface.set_at(search_pixel_pos, new_color)
-                have_been_stack.append(search_pixel_pos)
-                continue
+                if (mask == None or mask.get_at(search_pixel_pos)):
+                    surface.set_at(search_pixel_pos, new_color)
+                    fill_mask.set_at(search_pixel_pos, 1)
+                    have_been_stack.append(search_pixel_pos)
+                    continue
         have_been_stack.pop()
     log.output(logger.LOG_level("INFO"), "paint bucket has finished drawing")
+    return fill_mask
 
 current_input_buffer = ""
 max_input_buffer_len = 16
@@ -195,12 +204,12 @@ class UndoSinglePixel(UndoObject):
     def __str__(self):
         return f"UndoSinglePixel(pixel_pos={self.pixel_position}, color={self.color})"
 class UndoBucketFill(UndoObject):
-    def __init__(self, pixel_pos: pygame.math.Vector2, old_color: pygame.Color, temp_surface: pygame.Surface):
+    def __init__(self, pixel_pos: pygame.math.Vector2, old_color: pygame.Color, mask: pygame.Mask):
         self.pixel_position: pygame.math.Vector2 = pygame.math.Vector2(pixel_pos)
-        self.old_color = old_color
-        self.temp_surface: pygame.Surface = temp_surface
+        self.old_color: pygame.Color = old_color
+        self.mask: pygame.Mask = mask
     def __str__(self):
-        return "UndoBucketFill(pixel_pos={self.pixel_position}, old_color={self.old_color})"
+        return "UndoBucketFill(pixel_pos={self.pixel_position}, old_color={self.old_color}, mask:{self.mask})"
 class UndoResize(UndoObject):
     def __init__(self, old_surface: pygame.Surface):
         self.old_surface: pygame.Surface = old_surface
@@ -313,10 +322,12 @@ while True:
                     log.output(logger.LOG_level("INFO"), f"undoing package {undo_package}")
                     if isinstance(undo_package, UndoSinglePixel):
                         editing_surface.set_at(undo_package.pixel_position, undo_package.color)
-                    if isinstance(undo_package, UndoBucketFill):
-                        editing_surface = undo_package.temp_surface
-                    if isinstance(undo_package, UndoResize):
+                    elif isinstance(undo_package, UndoBucketFill):
+                        paint_tool_bucket(editing_surface, undo_package.pixel_position, undo_package.old_color, undo_package.mask)
+                    elif isinstance(undo_package, UndoResize):
                         editing_surface = undo_package.old_surface
+                    else:
+                        log.output(logger.LOG_level("WARNING"), f"undo package {undo_package} is not handles when undo button pressed")
                     log.output(logger.LOG_level("INFO"), f"Applied undo")
             if (current_mode == mode_type_normal and event.key == key_save_editing_surface):
                 pygame.image.save(editing_surface, app_save_filepath_editing_surface)
@@ -327,11 +338,13 @@ while True:
                 # assumes editing_surface_screen_proportionality_xy != 0
                 # assumes editing_surface_zoom != 0
                 mouse_position_on_editing_surface_position = (int(reverse_camera_mouse_position[0]/(editing_surface_screen_proportionality_xy[0]*editing_surface_zoom)), int(reverse_camera_mouse_position[1]/(editing_surface_screen_proportionality_xy[1]*editing_surface_zoom)))
-
-                undo_object = UndoBucketFill(pygame.math.Vector2(mouse_position_on_editing_surface_position), editing_surface.get_at(mouse_position_on_editing_surface_position), editing_surface.copy())
-                add_to_undo_buffer(undo_object)
+                
+                previous_color = editing_surface.get_at(mouse_position_on_editing_surface_position)
                 fill_color = buffer_colors[current_buffer_colors_index]
-                paint_tool_bucket(editing_surface, pygame.math.Vector2(mouse_position_on_editing_surface_position), fill_color)
+                fill_mask = paint_tool_bucket(editing_surface, pygame.math.Vector2(mouse_position_on_editing_surface_position), fill_color)
+
+                undo_object = UndoBucketFill(pygame.math.Vector2(mouse_position_on_editing_surface_position), previous_color, fill_mask)
+                add_to_undo_buffer(undo_object)
             if (event.key == key_confirm):	
                 if (current_mode == mode_type_select_color):
                     current_mode = mode_type_normal

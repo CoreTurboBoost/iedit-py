@@ -88,6 +88,7 @@ for arg_index in range(1, argc):
         print(" - undo editing surface modification (In normal mode): ", pygame.key.name(key_undo_editing_surface_modification))
         print(" - save editing surface (In normal mode): ", pygame.key.name(key_save_editing_surface))
         print(" - confirm (In any mode, used for prompts): ", pygame.key.name(key_confirm))
+        print(" - fill bucket paint brush (In normal mode): " , pygame.key.name(key_fill_bucket))
         sys.exit()
     else:
         print(f"[{arg_index+1}] option \'{arg}\' is not recognised")

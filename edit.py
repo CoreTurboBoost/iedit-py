@@ -11,7 +11,7 @@ if (__name__ != "__main__"):
     sys.exit(1)
 
 VERSION_MAJOR = 0
-VERSION_MINOR = 5
+VERSION_MINOR = 6
 VERSION_PATCH = 0
 
 log = logger.LOG()

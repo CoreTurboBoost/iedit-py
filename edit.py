@@ -325,14 +325,18 @@ while True:
                     log.output(logger.LOG_level("INFO"), f"undoing package {undo_package}")
                     if isinstance(undo_package, UndoSinglePixel):
                         editing_surface.set_at(undo_package.pixel_position, undo_package.color)
+                        app_state_unsaved_changes = True
                     elif isinstance(undo_package, UndoBucketFill):
                         paint_tool_bucket(editing_surface, undo_package.pixel_position, undo_package.old_color, undo_package.mask)
+                        app_state_unsaved_changes = True
                     elif isinstance(undo_package, UndoResize):
                         editing_surface = undo_package.old_surface
+                        app_state_unsaved_changes = True
                     else:
                         log.output(logger.LOG_level("WARNING"), f"undo package {undo_package} is not handles when undo button pressed")
                     log.output(logger.LOG_level("INFO"), f"Applied undo")
             if (current_mode == mode_type_normal and event.key == key_save_editing_surface):
+                app_state_unsaved_changes = False
                 pygame.image.save(editing_surface, app_save_filepath_editing_surface)
                 log.output(logger.LOG_level("INFO"), f"Saved current editing surface to {app_save_filepath_editing_surface}")
             if (current_mode == mode_type_normal and event.key == key_fill_bucket):
@@ -345,6 +349,7 @@ while True:
                 previous_color = editing_surface.get_at(mouse_position_on_editing_surface_position)
                 fill_color = buffer_colors[current_buffer_colors_index]
                 fill_mask = paint_tool_bucket(editing_surface, pygame.math.Vector2(mouse_position_on_editing_surface_position), fill_color)
+                app_state_unsaved_changes = True
 
                 undo_object = UndoBucketFill(pygame.math.Vector2(mouse_position_on_editing_surface_position), previous_color, fill_mask)
                 add_to_undo_buffer(undo_object)
@@ -466,6 +471,7 @@ while True:
                         if (char.isdigit()):
                             number_str += char
                     editing_surface = pygame.transform.scale(editing_surface, (width, height))
+                    app_state_unsaved_changes = True
                     log.output(logger.LOG_level("INFO"), f"Changed editing surface size to ({editing_surface.get_width()}, {editing_surface.get_height()})")
 
             if (event.key == pygame.K_0 or event.key == pygame.K_KP0):
@@ -752,6 +758,7 @@ while True:
             log.output(logger.LOG_level("INFO"), f"setting color: {buffer_colors[current_buffer_colors_index]}, at {mouse_position_on_editing_surface_position}")
 
             editing_surface.set_at(mouse_position_on_editing_surface_position, buffer_colors[current_buffer_colors_index])
+            app_state_unsaved_changes = True
 
             log.output(logger.LOG_level("INFO"), f"Set color: {editing_surface.get_at(mouse_position_on_editing_surface_position)} at {mouse_position_on_editing_surface_position}")
 

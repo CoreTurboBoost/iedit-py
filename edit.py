@@ -12,7 +12,7 @@ if (__name__ != "__main__"):
 
 VERSION_MAJOR = 0
 VERSION_MINOR = 6
-VERSION_PATCH = 1
+VERSION_PATCH = 2
 
 log = logger.LOG()
 log.set_warnlevel(logger.LOG_level("INFO"))
@@ -54,6 +54,10 @@ if (argc > 1):
     if (argv[1] == "--version"):
         print(f"VERSION: {VERSION_MAJOR}.{VERSION_MINOR}.{VERSION_PATCH}")
         sys.exit()
+
+def assume_or_exception(condition: bool) -> None:
+    if (condition):
+        Exception(f"condition failed")
 
 input_file_path = None
 output_file_path = None
@@ -139,20 +143,28 @@ def get_mode_type_code_to_str(mode_type_code):
         return "unknown"
 
 def paint_tool_bucket(surface: pygame.Surface, start_point: pygame.math.Vector2, new_color: pygame.Color, mask: pygame.Mask=None) -> pygame.Mask:
-    log.output(logger.LOG_level("INFO"), "Paint bucket started to draw")
+    if (mask != None):
+        assume_or_exception(surface.get_size() != mask.get_size())
+    log.output(logger.LOG_level("INFO"), f"Paint bucket started to draw, mask={mask}")
     fill_mask = pygame.Mask(surface.get_size())
     fill_mask.clear()
-    have_been_stack = [start_point]
+    have_been_stack = [(start_point.x, start_point.y)]
     try:
         search_color = surface.get_at((start_point.x, start_point.y))
     except IndexError:
+        log.output(logger.LOG_level("WARNING"), "Position given is invalid")
+        return None
+    if (search_color == new_color):
+        log.output(logger.LOG_level("WARNING"), "Search color and new color are the same")
         return None
     surface.set_at(start_point, new_color)
     while len(have_been_stack) != 0:
-        log.output(logger.LOG_level("INFO"), f"{len(have_been_stack)} elements in the have_been_visited_stack")
+        log.output(logger.LOG_level("INFO"), f"\n{len(have_been_stack)} elements in the have_been_visited_stack")
+        #log.output(logger.LOG_level("INFO"), f"stack={have_been_stack}")
         current_pixel_pos = have_been_stack[-1]
         if (current_pixel_pos[0]-1 >= 0):
             search_pixel_pos = (current_pixel_pos[0]-1, current_pixel_pos[1])
+            log.output(logger.LOG_level("INFO"), f"left pixel color = {surface.get_at(search_pixel_pos)}")
             if (surface.get_at(search_pixel_pos) == search_color and not(search_pixel_pos in have_been_stack)):
                 if (mask == None or mask.get_at(search_pixel_pos)):
                     surface.set_at(search_pixel_pos, new_color)
@@ -162,6 +174,7 @@ def paint_tool_bucket(surface: pygame.Surface, start_point: pygame.math.Vector2,
                     continue
         if (current_pixel_pos[1]-1 >= 0):
             search_pixel_pos = (current_pixel_pos[0], current_pixel_pos[1]-1)
+            log.output(logger.LOG_level("INFO"), f"up pixel color = {surface.get_at(search_pixel_pos)}")
             if (surface.get_at(search_pixel_pos) == search_color and not(search_pixel_pos in have_been_stack)):
                 if (mask == None or mask.get_at(search_pixel_pos)):
                     surface.set_at(search_pixel_pos, new_color)
@@ -171,6 +184,7 @@ def paint_tool_bucket(surface: pygame.Surface, start_point: pygame.math.Vector2,
                     continue
         if (current_pixel_pos[0]+1 < surface.get_width()):
             search_pixel_pos = (current_pixel_pos[0]+1, current_pixel_pos[1])
+            log.output(logger.LOG_level("INFO"), f"right pixel color = {surface.get_at(search_pixel_pos)}")
             if (surface.get_at(search_pixel_pos) == search_color and not(search_pixel_pos in have_been_stack)):
                 if (mask == None or mask.get_at(search_pixel_pos)):
                     surface.set_at(search_pixel_pos, new_color)
@@ -180,6 +194,7 @@ def paint_tool_bucket(surface: pygame.Surface, start_point: pygame.math.Vector2,
                     continue
         if (current_pixel_pos[1]+1 < surface.get_height()):
             search_pixel_pos = (current_pixel_pos[0], current_pixel_pos[1]+1)
+            log.output(logger.LOG_level("INFO"), f"down pixel color = {surface.get_at(search_pixel_pos)}")
             if (surface.get_at(search_pixel_pos) == search_color and not(search_pixel_pos in have_been_stack)):
                 if (mask == None or mask.get_at(search_pixel_pos)):
                     surface.set_at(search_pixel_pos, new_color)
@@ -216,12 +231,12 @@ class UndoBucketFill(UndoObject):
         self.old_color: pygame.Color = old_color
         self.mask: pygame.Mask = mask
     def __str__(self):
-        return "UndoBucketFill(pixel_pos={self.pixel_position}, old_color={self.old_color}, mask:{self.mask})"
+        return f"UndoBucketFill(pixel_pos={self.pixel_position}, old_color={self.old_color}, mask:{self.mask})"
 class UndoResize(UndoObject):
     def __init__(self, old_surface: pygame.Surface):
         self.old_surface: pygame.Surface = old_surface
     def __str__(self):
-        return "UndoResize(old_surface={self.old_surface})"
+        return f"UndoResize(old_surface={self.old_surface})"
 buffer_undo_objects = []
 buffer_undo_max_size = 512
 
@@ -355,8 +370,11 @@ while True:
                 fill_mask = paint_tool_bucket(editing_surface, pygame.math.Vector2(mouse_position_on_editing_surface_position), fill_color)
                 app_state_unsaved_changes = True
 
-                undo_object = UndoBucketFill(pygame.math.Vector2(mouse_position_on_editing_surface_position), previous_color, fill_mask)
-                add_to_undo_buffer(undo_object)
+                if (fill_mask != None):
+                    undo_object = UndoBucketFill(pygame.math.Vector2(mouse_position_on_editing_surface_position), previous_color, fill_mask)
+                    add_to_undo_buffer(undo_object)
+                else:
+                    log.output(logger.LOG_level("WARNING"), f"fill_mask is None, failed to bucket fill")
             if (event.key == key_confirm):	
                 if (current_mode == mode_type_select_color):
                     current_mode = mode_type_normal

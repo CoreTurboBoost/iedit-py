@@ -55,7 +55,7 @@ class LOG (object):
     def __init__ (self, file = None):
         self.warnlevel = LOG_level("INFO")
         self.stop_on_level = -1
-        self.output_code = False # where to output the code on the specified line or not 
+        self.output_code = False # Whether to output the code on the specified line or not 
         self.ignored_files = []
         self.same_print_count = 1
         self.print_buffer = []

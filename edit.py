@@ -158,6 +158,7 @@ def paint_tool_bucket(surface: pygame.Surface, start_point: pygame.math.Vector2,
                     surface.set_at(search_pixel_pos, new_color)
                     fill_mask.set_at(search_pixel_pos, 1)
                     have_been_stack.append(search_pixel_pos)
+                    log.output(logger.LOG_level("INFO"), f"Moved left")
                     continue
         if (current_pixel_pos[1]-1 >= 0):
             search_pixel_pos = (current_pixel_pos[0], current_pixel_pos[1]-1)
@@ -166,6 +167,7 @@ def paint_tool_bucket(surface: pygame.Surface, start_point: pygame.math.Vector2,
                     surface.set_at(search_pixel_pos, new_color)
                     fill_mask.set_at(search_pixel_pos, 1)
                     have_been_stack.append(search_pixel_pos)
+                    log.output(logger.LOG_level("INFO"), f"Moved up")
                     continue
         if (current_pixel_pos[0]+1 < surface.get_width()):
             search_pixel_pos = (current_pixel_pos[0]+1, current_pixel_pos[1])
@@ -174,6 +176,7 @@ def paint_tool_bucket(surface: pygame.Surface, start_point: pygame.math.Vector2,
                     surface.set_at(search_pixel_pos, new_color)
                     fill_mask.set_at(search_pixel_pos, 1)
                     have_been_stack.append(search_pixel_pos)
+                    log.output(logger.LOG_level("INFO"), f"Moved right")
                     continue
         if (current_pixel_pos[1]+1 < surface.get_height()):
             search_pixel_pos = (current_pixel_pos[0], current_pixel_pos[1]+1)
@@ -182,7 +185,9 @@ def paint_tool_bucket(surface: pygame.Surface, start_point: pygame.math.Vector2,
                     surface.set_at(search_pixel_pos, new_color)
                     fill_mask.set_at(search_pixel_pos, 1)
                     have_been_stack.append(search_pixel_pos)
+                    log.output(logger.LOG_level("INFO"), f"Moved down")
                     continue
+        log.output(logger.LOG_level("INFO"), f"poped, moved back by one")
         have_been_stack.pop()
     log.output(logger.LOG_level("INFO"), "paint bucket has finished drawing")
     return fill_mask

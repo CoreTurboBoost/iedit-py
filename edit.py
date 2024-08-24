@@ -158,10 +158,22 @@ def paint_tool_bucket(surface: pygame.Surface, start_point: pygame.math.Vector2,
         log.output(logger.LOG_level("WARNING"), "Search color and new color are the same")
         return None
     surface.set_at(start_point, new_color)
+    # debug
+    visited = [(start_point.x, start_point.y)]
+    # /debug
     while len(have_been_stack) != 0:
         log.output(logger.LOG_level("INFO"), f"\n{len(have_been_stack)} elements in the have_been_visited_stack")
-        #log.output(logger.LOG_level("INFO"), f"stack={have_been_stack}")
         current_pixel_pos = have_been_stack[-1]
+        # debug
+        #log.output(logger.LOG_level("INFO"), f"stack={have_been_stack}")
+        visited.append(current_pixel_pos)
+        if (visited.count(current_pixel_pos) > 50): # worringly large number of occurances
+            # potentially stuck in a loop
+            log.output(logger.LOG_level("ERROR"), f"pixel {current_pixel_pos} has been visited more than 50 times")
+            log.output(logger.LOG_level("INFO"), f"output current image state to ./a-debug.png")
+            pygame.image.save(surface, "./a-debug.png")
+            sys.exit(1)
+        # /debug
         if (current_pixel_pos[0]-1 >= 0):
             search_pixel_pos = (current_pixel_pos[0]-1, current_pixel_pos[1])
             log.output(logger.LOG_level("INFO"), f"left pixel color = {surface.get_at(search_pixel_pos)}")

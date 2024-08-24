@@ -138,7 +138,7 @@ def get_mode_type_code_to_str(mode_type_code):
     else:
         return "unknown"
 
-def paint_tool_bucket(surface: pygame.Surface, start_point: pygame.math.Vector2, new_color: pygame.Color, mask=None) -> pygame.Mask:
+def paint_tool_bucket(surface: pygame.Surface, start_point: pygame.math.Vector2, new_color: pygame.Color, mask: pygame.Mask=None) -> pygame.Mask:
     log.output(logger.LOG_level("INFO"), "Paint bucket started to draw")
     fill_mask = pygame.Mask(surface.get_size())
     fill_mask.clear()
@@ -148,7 +148,6 @@ def paint_tool_bucket(surface: pygame.Surface, start_point: pygame.math.Vector2,
     except IndexError:
         return None
     surface.set_at(start_point, new_color)
-    done = False
     while len(have_been_stack) != 0:
         log.output(logger.LOG_level("INFO"), f"{len(have_been_stack)} elements in the have_been_visited_stack")
         current_pixel_pos = have_been_stack[-1]

@@ -161,6 +161,7 @@ class ImageLayerBuffer:
             error_str = "Pygame error: {sys.exc_info()[1]}"
             self.surface = None
             return (True, error_str)
+        return (False, "")
             
 class State:
     unsaved_changes: bool = False

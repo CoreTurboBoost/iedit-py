@@ -772,7 +772,7 @@ while True:
         camera_position[0] += int(mouse_pos[0])
         camera_position[1] += int(mouse_pos[1])
 
-    if (app_state_mouse_main_click_held): #editing in any mode
+    if (current_mode == mode_type_normal and app_state_mouse_main_click_held):
         mouse_position = pygame.mouse.get_pos()
         reverse_camera_mouse_position = camera_reverse_transform(mouse_position)
         # assumes editing_surface_screen_proportionality_xy != 0

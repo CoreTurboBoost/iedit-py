@@ -12,7 +12,7 @@ if (__name__ != "__main__"):
 
 VERSION_MAJOR = 0
 VERSION_MINOR = 8
-VERSION_PATCH = 0
+VERSION_PATCH = 1
 
 log = logger.LOG()
 log.set_warnlevel(logger.LOG_level("INFO"))

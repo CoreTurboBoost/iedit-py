@@ -264,7 +264,7 @@ def add_to_undo_buffer(undo_object: UndoObject):
     global buffer_undo_objects
     buffer_undo_objects.append(undo_object)
     if (len(buffer_undo_objects) > buffer_undo_max_size):
-        buffer_undo_objects.pop() # Might change to make more robust
+        buffer_undo_objects.pop(0) # Might change to make more robust
 def pop_from_undo_buffer() -> UndoObject: # Or return None when empty
     global buffer_undo_objects
     if len(buffer_undo_objects) == 0:

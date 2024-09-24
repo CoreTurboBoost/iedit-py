@@ -133,11 +133,30 @@ if (len(input_layer_filepaths) == 0):
     surface_layers.append(pygame.Surface((32, 32), pygame.SRCALPHA))
     input_layer_filepaths.append("a.png")
 
+class ImageLayerBuffer:
+    def __init__(self, filepath: str):
+        self.filepath = filepath
+        self.surface = None
+        self.undo_object = []
+    def load(self) -> (bool, str):
+        error_str = ""
+        try:
+            self.surface = pygame.image.load(self.filepath)
+        except FileNotFoundError:
+            error_str = "File '{self.filepath}' was not found"
+            self.surface = None
+            return (True, error_str)
+        except pygame.error:
+            error_str = "Pygame error: {sys.exc_info()[1]}"
+            self.surface = None
+            return (True, error_str)
+            
 class State:
     unsaved_changes: bool = False
     main_mouse_button_clicked_this_frame = False
     main_mouse_button_held = False
     last_mouse_position = (0, 0)
+    max_undo_objects = 512
 
 class Mode:
     NORMAL = 0
@@ -273,12 +292,11 @@ class UndoResize(UndoObject):
         return f"UndoResize(old_surface={self.old_surface})"
 
 per_layer_undo_objects = [[]] * len(input_layer_filepaths)
-buffer_undo_max_size = 512
 
 def add_undo_to_cur_layer(undo_object: UndoObject):
     global per_layer_undo_objects, current_selected_surface_layer_index
     per_layer_undo_objects[current_selected_surface_layer_index].append(undo_object)
-    if (len(per_layer_undo_objects[current_selected_surface_layer_index]) > buffer_undo_max_size):
+    if (len(per_layer_undo_objects[current_selected_surface_layer_index]) > State.max_undo_objects):
         per_layer_undo_objects[current_selected_surface_layer_index].pop(0)
 def pop_undo_from_cur_layer() -> UndoObject: # Or return None when empty
     global per_layer_undo_objects, current_selected_surface_layer_index

@@ -4,7 +4,8 @@ Uses python3 with pygame.
 
 Controls:
  - Mouse wheel up, down, zooms in and out.
- - Escape can be used to exit text prompts and exit the program (program exits when in normal mode).
+ - Escape can be used to exit text prompts and return to normal mode.
+ - key q, quits the program (In normal mode).
  - key s, select color (In normal mode).
  - key c, set color (In normal mode).
  - key r, resize editing surface (In normal mode).

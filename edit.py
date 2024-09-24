@@ -20,25 +20,75 @@ log.set_warnlevel(logger.LOG_level("INFO"))
 
 pygame.init()
 
-key_return_normal_mode = pygame.K_ESCAPE
-key_select_mode_select_color = pygame.K_s
-key_select_mode_set_color = pygame.K_c
-key_layer_mode_toggle = pygame.K_l
-key_resize_editing_surface = pygame.K_r
-key_undo_editing_surface_modification = pygame.K_u
-key_save_current_layer_surface = pygame.K_w
-key_pick_color = pygame.K_p
-key_confirm = pygame.K_RETURN
-key_move_camera = pygame.K_m
-key_fill_bucket = pygame.K_f
-key_quit = pygame.K_q
+class Key:
+    return_normal_mode = pygame.K_ESCAPE
+    select_mode_select_color = pygame.K_s
+    select_mode_set_color = pygame.K_c
+    layer_mode_toggle = pygame.K_l
+    resize_editing_surface = pygame.K_r
+    undo_editing_surface_modification = pygame.K_u
+    save_current_layer_surface = pygame.K_w
+    pick_color = pygame.K_p
+    confirm = pygame.K_RETURN
+    move_camera = pygame.K_m
+    fill_bucket = pygame.K_f
+    quit = pygame.K_q
+
+class ImageLayerBuffer:
+    def __init__(self, filepath: str):
+        self.filepath = filepath
+        self.surface = None
+        self.undo_object = []
+    def load(self) -> (bool, str):
+        error_str = ""
+        try:
+            self.surface = pygame.image.load(self.filepath)
+        except FileNotFoundError:
+            error_str = "File '{self.filepath}' was not found"
+            self.surface = None
+            return (True, error_str)
+        except pygame.error:
+            error_str = "Pygame error: {sys.exc_info()[1]}"
+            self.surface = None
+            return (True, error_str)
+        return (False, "")
+
+class UIElement:
+    def __init__(self, position: Vec2, size: Vec2):
+        self.frect = pygame.FRect(position, size)
+    def handle_event(self, pgevent: pygame.Event) -> None:
+        pass
+    def render(self, render_surface: pygame.Surface -> None);
+        pass
+    def update(self, delta_time: float) -> None:
+        pass
+            
+class State:
+    unsaved_changes: bool = False
+    main_mouse_button_clicked_this_frame = False
+    main_mouse_button_held = False
+    move_camera = False
+    camera_position = [0, 0]
+    last_mouse_position = (0, 0)
+    max_undo_objects = 512
+    current_selected_surface_layer_index = 0
+
+class Mode:
+    NORMAL = 0
+    SELECT_COLOR = 1
+    SET_COLOR = 2
+    SAVE_FILE = 3
+    RESIZE_SURFACE = 4
+    LAYERS = 5
+    current = NORMAL
 
 editing_surface_zoom = 30
 editing_surface_max_zoom = 100
 
+per_layer_undo_objects = [[]] * len(input_layer_filepaths)
+
 input_layer_filepaths = []
 surface_layers = []
-current_selected_surface_layer_index = 0
 
 argv = sys.argv
 argc = len(argv)
@@ -79,17 +129,17 @@ for arg_index in range(1, argc):
         cli_only_files_remain = True
     elif (arg == "--key-bindings" and not cli_only_files_remain):
         print("Key bindings:")
-        print(" Can escape back to normal mode with key", pygame.key.name(key_return_normal_mode))
-        print(" - select color (In normal mode): ", pygame.key.name(key_select_mode_select_color))
-        print(" - set color (In normal mode): ", pygame.key.name(key_select_mode_set_color))
-        print(" - resize editing surface (In normal mode): ", pygame.key.name(key_resize_editing_surface))
-        print(" - layers managment (In normal mode): ", pygame.key.name(key_layer_mode_toggle))
-        print(" - undo editing surface modification (In normal mode): ", pygame.key.name(key_undo_editing_surface_modification))
-        print(" - save current layer (In normal mode): ", pygame.key.name(key_save_current_layer_surface))
-        print(" - pick current hovered color (In normal mode): ", pygame.key.name(key_pick_color))
-        print(" - confirm (In any mode, used for prompts): ", pygame.key.name(key_confirm))
-        print(" - fill bucket paint brush (In normal mode): " , pygame.key.name(key_fill_bucket))
-        print(" - quit program without saving (or save warning) (In normal mode): ", pygame.key.name(key_quit))
+        print(" Can escape back to normal mode with key", pygame.key.name(Key.return_normal_mode))
+        print(" - select color (In normal mode): ", pygame.key.name(Key.select_mode_select_color))
+        print(" - set color (In normal mode): ", pygame.key.name(Key.select_mode_set_color))
+        print(" - resize editing surface (In normal mode): ", pygame.key.name(Key.resize_editing_surface))
+        print(" - layers managment (In normal mode): ", pygame.key.name(Key.layer_mode_toggle))
+        print(" - undo editing surface modification (In normal mode): ", pygame.key.name(Key._undo_editing_surface_modification))
+        print(" - save current layer (In normal mode): ", pygame.key.name(Key.save_current_layer_surface))
+        print(" - pick current hovered color (In normal mode): ", pygame.key.name(Key.pick_color))
+        print(" - confirm (In any mode, used for prompts): ", pygame.key.name(Key.confirm))
+        print(" - fill bucket paint brush (In normal mode): " , pygame.key.name(Key.fill_bucket))
+        print(" - quit program without saving (or save warning) (In normal mode): ", pygame.key.name(Key.quit))
         sys.exit()
     elif (arg[:2] == "--" and not cli_only_files_remain):
         print(f"[{arg_index}] argument {arg} is not recognised")
@@ -133,51 +183,6 @@ if (len(input_layer_filepaths) == 0):
     print("No input image files given. Loading a default surface. Setting output file to 'a.png'.")
     surface_layers.append(pygame.Surface((32, 32), pygame.SRCALPHA))
     input_layer_filepaths.append("a.png")
-
-class UIElement:
-    def __init__(self, position: Vec2, size: Vec2):
-        self.frect = pygame.FRect(position, size)
-    def handle_event(self, pgevent: pygame.Event) -> None:
-        pass
-    def render(self, render_surface: pygame.Surface -> None);
-        pass
-    def update(self, delta_time: float) -> None:
-        pass
-
-class ImageLayerBuffer:
-    def __init__(self, filepath: str):
-        self.filepath = filepath
-        self.surface = None
-        self.undo_object = []
-    def load(self) -> (bool, str):
-        error_str = ""
-        try:
-            self.surface = pygame.image.load(self.filepath)
-        except FileNotFoundError:
-            error_str = "File '{self.filepath}' was not found"
-            self.surface = None
-            return (True, error_str)
-        except pygame.error:
-            error_str = "Pygame error: {sys.exc_info()[1]}"
-            self.surface = None
-            return (True, error_str)
-        return (False, "")
-            
-class State:
-    unsaved_changes: bool = False
-    main_mouse_button_clicked_this_frame = False
-    main_mouse_button_held = False
-    last_mouse_position = (0, 0)
-    max_undo_objects = 512
-
-class Mode:
-    NORMAL = 0
-    SELECT_COLOR = 1
-    SET_COLOR = 2
-    SAVE_FILE = 3
-    RESIZE_SURFACE = 4
-    LAYERS = 5
-    current = NORMAL
 
 def get_mode_type_code_to_str(mode_type_code):
     if (mode_type_code == Mode.NORMAL):
@@ -303,18 +308,16 @@ class UndoResize(UndoObject):
     def __str__(self):
         return f"UndoResize(old_surface={self.old_surface})"
 
-per_layer_undo_objects = [[]] * len(input_layer_filepaths)
-
 def add_undo_to_cur_layer(undo_object: UndoObject):
-    global per_layer_undo_objects, current_selected_surface_layer_index
-    per_layer_undo_objects[current_selected_surface_layer_index].append(undo_object)
-    if (len(per_layer_undo_objects[current_selected_surface_layer_index]) > State.max_undo_objects):
-        per_layer_undo_objects[current_selected_surface_layer_index].pop(0)
+    global per_layer_undo_objects, State.current_selected_surface_layer_index
+    per_layer_undo_objects[State.current_selected_surface_layer_index].append(undo_object)
+    if (len(per_layer_undo_objects[State.current_selected_surface_layer_index]) > State.max_undo_objects):
+        per_layer_undo_objects[State.current_selected_surface_layer_index].pop(0)
 def pop_undo_from_cur_layer() -> UndoObject: # Or return None when empty
-    global per_layer_undo_objects, current_selected_surface_layer_index
-    if len(per_layer_undo_objects[current_selected_surface_layer_index]) == 0:
+    global per_layer_undo_objects, State.current_selected_surface_layer_index
+    if len(per_layer_undo_objects[State.current_selected_surface_layer_index]) == 0:
         return None
-    return per_layer_undo_objects[current_selected_surface_layer_index].pop()
+    return per_layer_undo_objects[State.current_selected_surface_layer_index].pop()
 
 display_color_rect_horizontal_gap = 5 # pixels
 display_color_rect_screen_verticle_gap = 10 # pixels
@@ -333,13 +336,11 @@ app_text_color = (0, 0, 0)
 app_text_background_color = (255 - app_text_color[0], 255 - app_text_color[1], 255 - app_text_color[2], 100)
 max_fps = 60
 
-app_state_move_camera = False
-camera_position = [0, 0]
 def camera_transform(vec2f_position):
-    return (vec2f_position[0] - camera_position[0] + screen_size[0]/2, vec2f_position[1] - camera_position[1] + screen_size[1]/2)
+    return (vec2f_position[0] - State.camera_position[0] + screen_size[0]/2, vec2f_position[1] - State.camera_position[1] + screen_size[1]/2)
 
 def camera_reverse_transform(vec2f_position):
-    return (vec2f_position[0] + camera_position[0] - screen_size[0]/2, vec2f_position[1] + camera_position[1] - screen_size[1]/2)
+    return (vec2f_position[0] + State.camera_position[0] - screen_size[0]/2, vec2f_position[1] + State.camera_position[1] - screen_size[1]/2)
 error_string = ""
 
 previous_frame_time = time.time()
@@ -347,7 +348,7 @@ clock = pygame.time.Clock()
 while True:
     clock.tick(max_fps)
     fps = clock.get_fps()
-    pygame.display.set_caption(f"edit - {input_layer_filepaths[current_selected_surface_layer_index]} - {fps : 0.1f}")
+    pygame.display.set_caption(f"edit - {input_layer_filepaths[State.current_selected_surface_layer_index]} - {fps : 0.1f}")
     delta_time_seconds = time.time() - previous_frame_time
     previous_frame_time = time.time()
 
@@ -355,7 +356,7 @@ while True:
 
     State.last_mouse_position = pygame.mouse.get_pos()
     for event in pygame.event.get():
-        if (event.type == pygame.QUIT or Mode.current == Mode.NORMAL and event.type == pygame.KEYDOWN and event.key == key_quit):
+        if (event.type == pygame.QUIT or Mode.current == Mode.NORMAL and event.type == pygame.KEYDOWN and event.key == Key.quit):
             if (State.unsaved_changes):
                 print("There are unsaved changes")
             pygame.quit()
@@ -384,53 +385,53 @@ while True:
 
         if (event.type == pygame.KEYDOWN):
 
-            if (Mode.current != Mode.NORMAL and event.key == key_return_normal_mode):
+            if (Mode.current != Mode.NORMAL and event.key == Key.return_normal_mode):
                 log.output(logger.LOG_level("INFO"), f"Escaped to normal mode from {get_mode_type_code_to_str(Mode.current)}")
                 Mode.current = Mode.NORMAL
                 current_input_buffer = ""
-            if (Mode.current == Mode.NORMAL and event.key == key_select_mode_select_color):
+            if (Mode.current == Mode.NORMAL and event.key == Key.select_mode_select_color):
                 Mode.current = Mode.SELECT_COLOR
                 log.output(logger.LOG_level("INFO"), f"Entered mode {get_mode_type_code_to_str(Mode.current)}")
                 current_input_buffer = ""
-            if (Mode.current == Mode.NORMAL and event.key == key_select_mode_set_color):
+            if (Mode.current == Mode.NORMAL and event.key == Key.select_mode_set_color):
                 Mode.current = Mode.SET_COLOR
                 log.output(logger.LOG_level("INFO"), f"Entered mode {get_mode_type_code_to_str(Mode.current)}")
                 current_input_buffer = ""
-            if (Mode.current == Mode.NORMAL and event.key == key_resize_editing_surface):
+            if (Mode.current == Mode.NORMAL and event.key == Key.resize_editing_surface):
                 Mode.current = Mode.RESIZE_SURFACE
                 log.output(logger.LOG_level("INFO"), f"Entered mode {get_mode_type_code_to_str(Mode.current)}")
                 current_input_buffer = ""
-            if (Mode.current == Mode.NORMAL and event.key == key_move_camera):
-                app_state_move_camera = True
-            if (Mode.current == Mode.NORMAL and event.key == key_undo_editing_surface_modification):
+            if (Mode.current == Mode.NORMAL and event.key == Key.move_camera):
+                State.move_camera = True
+            if (Mode.current == Mode.NORMAL and event.key == Key.undo_editing_surface_modification):
                 undo_package = pop_undo_from_cur_layer()
                 if (undo_package != None):
                     log.output(logger.LOG_level("INFO"), f"undoing package {undo_package}")
                     if isinstance(undo_package, UndoSinglePixel):
-                        surface_layers[current_selected_surface_layer_index].set_at(undo_package.pixel_position, undo_package.color)
+                        surface_layers[State.current_selected_surface_layer_index].set_at(undo_package.pixel_position, undo_package.color)
                         State.unsaved_changes = True
                     elif isinstance(undo_package, UndoBucketFill):
-                        paint_tool_bucket(surface_layers[current_selected_surface_layer_index], undo_package.pixel_position, undo_package.old_color, undo_package.mask)
+                        paint_tool_bucket(surface_layers[State.current_selected_surface_layer_index], undo_package.pixel_position, undo_package.old_color, undo_package.mask)
                         State.unsaved_changes = True
                     elif isinstance(undo_package, UndoResize):
-                        surface_layers[current_selected_surface_layer_index] = undo_package.old_surface
+                        surface_layers[State.current_selected_surface_layer_index] = undo_package.old_surface
                         State.unsaved_changes = True
                     else:
                         log.output(logger.LOG_level("WARNING"), f"undo package {undo_package} is not handles when undo button pressed")
                     log.output(logger.LOG_level("INFO"), f"Applied undo")
-            if (Mode.current == Mode.NORMAL and event.key == key_save_current_layer_surface):
+            if (Mode.current == Mode.NORMAL and event.key == Key.save_current_layer_surface):
                 State.unsaved_changes = False
-                pygame.image.save(surface_layers[current_selected_surface_layer_index], input_layer_filepaths[current_selected_surface_layer_index])
-                log.output(logger.LOG_level("INFO"), f"Saved current editing surface to {input_layer_filepaths[current_selected_surface_layer_index]}")
-            if (Mode.current == Mode.NORMAL and event.key == key_fill_bucket):
+                pygame.image.save(surface_layers[State.current_selected_surface_layer_index], input_layer_filepaths[State.current_selected_surface_layer_index])
+                log.output(logger.LOG_level("INFO"), f"Saved current editing surface to {input_layer_filepaths[State.current_selected_surface_layer_index]}")
+            if (Mode.current == Mode.NORMAL and event.key == Key.fill_bucket):
                 reverse_camera_mouse_position = camera_reverse_transform(State.last_mouse_position)
                 # assumes editing_surface_screen_proportionality_xy != 0
                 # assumes editing_surface_zoom != 0
                 mouse_position_on_editing_surface_position = (int(reverse_camera_mouse_position[0]/(editing_surface_screen_proportionality_xy[0]*editing_surface_zoom)), int(reverse_camera_mouse_position[1]/(editing_surface_screen_proportionality_xy[1]*editing_surface_zoom)))
 
-                previous_color = surface_layers[current_selected_surface_layer_index].get_at(mouse_position_on_editing_surface_position)
+                previous_color = surface_layers[State.current_selected_surface_layer_index].get_at(mouse_position_on_editing_surface_position)
                 fill_color = buffer_colors[current_buffer_colors_index]
-                fill_mask = paint_tool_bucket(surface_layers[current_selected_surface_layer_index], pygame.math.Vector2(mouse_position_on_editing_surface_position), fill_color)
+                fill_mask = paint_tool_bucket(surface_layers[State.current_selected_surface_layer_index], pygame.math.Vector2(mouse_position_on_editing_surface_position), fill_color)
                 State.unsaved_changes = True
 
                 if (fill_mask != None):
@@ -438,22 +439,22 @@ while True:
                     add_undo_to_cur_layer(undo_object)
                 else:
                     log.output(logger.LOG_level("WARNING"), f"fill_mask is None, failed to bucket fill")
-            if (Mode.current == Mode.NORMAL and event.key == key_pick_color):
+            if (Mode.current == Mode.NORMAL and event.key == Key.pick_color):
                 reversed_camera_mouse_pos = camera_reverse_transform(State.last_mouse_position)
                 current_hovered_pixel_pos = (int(reversed_camera_mouse_pos[0]/(editing_surface_screen_proportionality_xy[0]*editing_surface_zoom)), int(reversed_camera_mouse_pos[1]/(editing_surface_screen_proportionality_xy[1]*editing_surface_zoom)))
                 try:
-                    hover_color = surface_layers[current_selected_surface_layer_index].get_at((current_hovered_pixel_pos[0], current_hovered_pixel_pos[1]))
+                    hover_color = surface_layers[State.current_selected_surface_layer_index].get_at((current_hovered_pixel_pos[0], current_hovered_pixel_pos[1]))
                 except IndexError:
                     log.output(logger.LOG_level("WARNING"), "Position given is invalid")
                     continue
                 log.output(logger.LOG_level("INFO"), f"adding color {hover_color} to pallet buffer slot {current_buffer_colors_index}")
                 buffer_colors[current_buffer_colors_index] = hover_color
-            if (Mode.current == Mode.NORMAL and event.key == key_layer_mode_toggle):
+            if (Mode.current == Mode.NORMAL and event.key == Key.layer_mode_toggle):
                 log.output(logger.LOG_level("INFO"), "Entered layer mode")
                 Mode.current = Mode.LAYERS
                 # Edit each layers' surface blend mode here.
 
-            if (event.key == key_confirm):
+            if (event.key == Key.confirm):
                 if (Mode.current == Mode.SELECT_COLOR):
                     Mode.current = Mode.NORMAL
                     log.output(logger.LOG_level("INFO"), f"Entered mode {get_mode_type_code_to_str(Mode.current)}")
@@ -550,11 +551,11 @@ while True:
                 if (Mode.current == Mode.RESIZE_SURFACE):
                     Mode.current = Mode.NORMAL
 
-                    undo_object = UndoResize(surface_layers[current_selected_surface_layer_index])
+                    undo_object = UndoResize(surface_layers[State.current_selected_surface_layer_index])
                     add_undo_to_cur_layer(undo_object)
 
-                    width = surface_layers[current_selected_surface_layer_index].get_width()
-                    height = surface_layers[current_selected_surface_layer_index].get_height()
+                    width = surface_layers[State.current_selected_surface_layer_index].get_width()
+                    height = surface_layers[State.current_selected_surface_layer_index].get_height()
                     number_str = ""
                     for char in current_input_buffer:
 
@@ -570,9 +571,9 @@ while True:
                                     number_str = ""
                         if (char.isdigit()):
                             number_str += char
-                    surface_layers[current_selected_surface_layer_index] = pygame.transform.scale(surface_layers[current_selected_surface_layer_index], (width, height))
+                    surface_layers[State.current_selected_surface_layer_index] = pygame.transform.scale(surface_layers[State.current_selected_surface_layer_index], (width, height))
                     State.unsaved_changes = True
-                    log.output(logger.LOG_level("INFO"), f"Changed editing surface size to ({surface_layers[current_selected_surface_layer_index].get_width()}, {surface_layers[current_selected_surface_layer_index].get_height()})")
+                    log.output(logger.LOG_level("INFO"), f"Changed editing surface size to ({surface_layers[State.current_selected_surface_layer_index].get_width()}, {surface_layers[State.current_selected_surface_layer_index].get_height()})")
 
             if (event.key == pygame.K_0 or event.key == pygame.K_KP0):
                 if (Mode.current == Mode.SELECT_COLOR):
@@ -822,10 +823,10 @@ while True:
                     log.output(logger.LOG_level("INFO"), f"Changed mode to normal from resize surface")
 
         if (event.type == pygame.KEYUP):
-            if (event.key == key_move_camera):
-                app_state_move_camera = False
+            if (event.key == Key.move_camera):
+                State.move_camera = False
 
-    if (Mode.current == Mode.NORMAL and app_state_move_camera):
+    if (Mode.current == Mode.NORMAL and State.move_camera):
         mouse_pos = list(pygame.mouse.get_pos())
         mouse_pos[0] -= screen_size[0]/2
         mouse_pos[1] -= screen_size[1]/2
@@ -835,8 +836,8 @@ while True:
             mouse_pos[1] = 0
         mouse_pos[0] *= 0.06
         mouse_pos[1] *= 0.06
-        camera_position[0] += int(mouse_pos[0])
-        camera_position[1] += int(mouse_pos[1])
+        State.camera_position[0] += int(mouse_pos[0])
+        State.camera_position[1] += int(mouse_pos[1])
 
     if (Mode.current == Mode.NORMAL and State.main_mouse_button_held):
         reverse_camera_mouse_position = camera_reverse_transform(State.last_mouse_position)
@@ -845,37 +846,37 @@ while True:
         mouse_position_on_editing_surface_position = (int(reverse_camera_mouse_position[0]/(editing_surface_screen_proportionality_xy[0]*editing_surface_zoom)), int(reverse_camera_mouse_position[1]/(editing_surface_screen_proportionality_xy[1]*editing_surface_zoom)))
         if (mouse_position_on_editing_surface_position[0] < 0 or mouse_position_on_editing_surface_position[1] < 0):
             log.output(logger.LOG_level("ERROR"), f"surface position is negative: {mouse_position_on_editing_surface_position}", write_file_path = "errors.txt")
-            log.output(logger.LOG_level("INFO"), f"Data: mouse_pos:{State.last_mouse_position}, screen_size:{screen_size}, camera_pos:{camera_position}, revers_cam_pos:{reverse_camera_mouse_position}, proprotionality_xy:{editing_surface_screen_proportionality_xy}, zoom:{editing_surface_zoom}", write_file_path = "errors.txt")
-        elif (mouse_position_on_editing_surface_position[0] >= surface_layers[current_selected_surface_layer_index].get_width() or mouse_position_on_editing_surface_position[1] >= surface_layers[current_selected_surface_layer_index].get_height()):
+            log.output(logger.LOG_level("INFO"), f"Data: mouse_pos:{State.last_mouse_position}, screen_size:{screen_size}, camera_pos:{State.camera_position}, revers_cam_pos:{reverse_camera_mouse_position}, proprotionality_xy:{editing_surface_screen_proportionality_xy}, zoom:{editing_surface_zoom}", write_file_path = "errors.txt")
+        elif (mouse_position_on_editing_surface_position[0] >= surface_layers[State.current_selected_surface_layer_index].get_width() or mouse_position_on_editing_surface_position[1] >= surface_layers[State.current_selected_surface_layer_index].get_height()):
             log.output(logger.LOG_level("ERROR"), f"surface position is greater or equal surface size: {mouse_position_on_editing_surface_position}", write_file_path = "errors.txt")
-            log.output(logger.LOG_level("INFO"), f"Data: mouse_pos:{State.last_mouse_position}, screen_size:{screen_size}, camera_pos:{camera_position}, revers_cam_pos:{reverse_camera_mouse_position}, proprotionality_xy:{editing_surface_screen_proportionality_xy}, zoom:{editing_surface_zoom}", write_file_path = "errors.txt")
-        elif (buffer_colors[current_buffer_colors_index] != surface_layers[current_selected_surface_layer_index].get_at(mouse_position_on_editing_surface_position)):
-            color_copy = pygame.Color(surface_layers[current_selected_surface_layer_index].get_at(mouse_position_on_editing_surface_position))
+            log.output(logger.LOG_level("INFO"), f"Data: mouse_pos:{State.last_mouse_position}, screen_size:{screen_size}, camera_pos:{State.camera_position}, revers_cam_pos:{reverse_camera_mouse_position}, proprotionality_xy:{editing_surface_screen_proportionality_xy}, zoom:{editing_surface_zoom}", write_file_path = "errors.txt")
+        elif (buffer_colors[current_buffer_colors_index] != surface_layers[State.current_selected_surface_layer_index].get_at(mouse_position_on_editing_surface_position)):
+            color_copy = pygame.Color(surface_layers[State.current_selected_surface_layer_index].get_at(mouse_position_on_editing_surface_position))
             undo_object = UndoSinglePixel(mouse_position_on_editing_surface_position, color_copy)
             add_undo_to_cur_layer(undo_object)
             log.output(logger.LOG_level("INFO"), f"mouse_position_on_surface: {mouse_position_on_editing_surface_position}")
             log.output(logger.LOG_level("INFO"), f"setting color: {buffer_colors[current_buffer_colors_index]}, at {mouse_position_on_editing_surface_position}")
 
-            surface_layers[current_selected_surface_layer_index].set_at(mouse_position_on_editing_surface_position, buffer_colors[current_buffer_colors_index])
+            surface_layers[State.current_selected_surface_layer_index].set_at(mouse_position_on_editing_surface_position, buffer_colors[current_buffer_colors_index])
             State.unsaved_changes = True
 
-            log.output(logger.LOG_level("INFO"), f"Set color: {surface_layers[current_selected_surface_layer_index].get_at(mouse_position_on_editing_surface_position)} at {mouse_position_on_editing_surface_position}")
+            log.output(logger.LOG_level("INFO"), f"Set color: {surface_layers[State.current_selected_surface_layer_index].get_at(mouse_position_on_editing_surface_position)} at {mouse_position_on_editing_surface_position}")
 
     screen.fill(bg_color)
 
     editing_surface_screen_proportionality_xy = (screen_size[0]/640, screen_size[1]/480)
-    transformed_editing_surface = pygame.transform.scale(surface_layers[current_selected_surface_layer_index], (surface_layers[current_selected_surface_layer_index].get_width()*editing_surface_screen_proportionality_xy[0]*editing_surface_zoom, surface_layers[current_selected_surface_layer_index].get_height()*editing_surface_screen_proportionality_xy[1]*editing_surface_zoom))
+    transformed_editing_surface = pygame.transform.scale(surface_layers[State.current_selected_surface_layer_index], (surface_layers[State.current_selected_surface_layer_index].get_width()*editing_surface_screen_proportionality_xy[0]*editing_surface_zoom, surface_layers[State.current_selected_surface_layer_index].get_height()*editing_surface_screen_proportionality_xy[1]*editing_surface_zoom))
 
-    editing_surface_average_color = pygame.transform.average_color(surface_layers[current_selected_surface_layer_index])
+    editing_surface_average_color = pygame.transform.average_color(surface_layers[State.current_selected_surface_layer_index])
     editing_surface_negated_color = pygame.Color(255 - editing_surface_average_color[0], 255 - editing_surface_average_color[1], 255 - editing_surface_average_color[2])
     if (123 < editing_surface_negated_color[0] < 134 and 123 < editing_surface_negated_color[1] < 134 and 123 < editing_surface_negated_color[2] < 134):
         editing_surface_negated_color[0] += 32
         editing_surface_negated_color[1] += 32
         editing_surface_negated_color[2] += 32
     screen.blit(transformed_editing_surface, camera_transform((0, 0)))
-    for x in range(surface_layers[current_selected_surface_layer_index].get_width()+1):
+    for x in range(surface_layers[State.current_selected_surface_layer_index].get_width()+1):
         pygame.draw.line(screen, editing_surface_negated_color, camera_transform((x*editing_surface_screen_proportionality_xy[0]*editing_surface_zoom, 0)), camera_transform((x*editing_surface_screen_proportionality_xy[0]*editing_surface_zoom, transformed_editing_surface.get_height())))
-    for y in range(surface_layers[current_selected_surface_layer_index].get_height()+1):
+    for y in range(surface_layers[State.current_selected_surface_layer_index].get_height()+1):
         pygame.draw.line(screen, editing_surface_negated_color, camera_transform((0, y*editing_surface_screen_proportionality_xy[1]*editing_surface_zoom)), camera_transform((transformed_editing_surface.get_width(), y*editing_surface_screen_proportionality_xy[1]*editing_surface_zoom)))
     
     display_color_rect_size = (screen_size[0]//25, screen_size[1]//25)
@@ -910,7 +911,7 @@ while True:
     screen.blit(display_input_buffer_background_surface, (screen_size[0] - display_input_buffer_surface.get_width() - 5, screen_size[1] - display_input_buffer_surface.get_height() -5))
     screen.blit(display_input_buffer_surface, (screen_size[0] - display_input_buffer_surface.get_width() - 5, screen_size[1] - display_input_buffer_surface.get_height() -5))
 
-    display_layer_index_text = app_font_object.render(f"{current_selected_surface_layer_index}/{len(surface_layers)}", True, (app_text_color))
+    display_layer_index_text = app_font_object.render(f"{State.current_selected_surface_layer_index}/{len(surface_layers)}", True, (app_text_color))
     display_layer_index_background = pygame.Surface((display_layer_index_text.get_width()+10, display_layer_index_text.get_height()+10))
     display_layer_index_background.fill(app_text_background_color)
     display_layer_index_background.set_alpha(app_text_background_alpha)
@@ -918,7 +919,7 @@ while True:
     screen.blit(display_layer_index_text, (screen_size[0] -display_layer_index_background.get_width(), display_color_rect_screen_verticle_gap +display_color_rect_size[1] +10 +5 + display_color_rect_text_background_surface.get_height()))
 
     if (Mode.current == Mode.RESIZE_SURFACE):
-        editing_surface_size_text_surface = app_font_object.render(f"{surface_layers[current_selected_surface_layer_index].get_width()}w {surface_layers[current_selected_surface_layer_index].get_height()}h", True, (app_text_color))
+        editing_surface_size_text_surface = app_font_object.render(f"{surface_layers[State.current_selected_surface_layer_index].get_width()}w {surface_layers[State.current_selected_surface_layer_index].get_height()}h", True, (app_text_color))
         editing_surface_size_text_background_surface = pygame.Surface((editing_surface_size_text_surface.get_width(), editing_surface_size_text_surface.get_height()))
         editing_surface_size_text_background_surface.fill(app_text_background_color)
         editing_surface_size_text_background_surface.set_alpha(app_text_background_alpha)

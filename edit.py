@@ -789,7 +789,7 @@ while True:
                     log.output(logger.LOG_level("INFO"), f"Changed mode to normal from resize surface")
 
         if (event.type == pygame.KEYUP):
-            if (current_mode == mode_type_normal and event.key == pygame.K_m):
+            if (event.key == key_move_camera):
                 app_state_move_camera = False
 
     if (current_mode == mode_type_normal and app_state_move_camera):

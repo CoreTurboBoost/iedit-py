@@ -1,6 +1,6 @@
 
 # Edit is a mode based graphical image editing tool
-Uses python3 with pygame.
+Uses python3 with the pygame-ce library.
 
 Controls:
  - Mouse wheel up, down, zooms in and out.

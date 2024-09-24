@@ -419,8 +419,8 @@ while True:
                 log.output(logger.LOG_level("INFO"), "Entered layer mode")
                 current_mode = mode_type_layers
                 # Edit each layers' surface blend mode here.
-                
-            if (event.key == key_confirm):	
+
+            if (event.key == key_confirm):
                 if (current_mode == mode_type_select_color):
                     current_mode = mode_type_normal
                     log.output(logger.LOG_level("INFO"), f"Entered mode {get_mode_type_code_to_str(current_mode)}")

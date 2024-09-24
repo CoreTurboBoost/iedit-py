@@ -78,6 +78,7 @@ for arg_index in range(1, argc):
             print(f"[{arg_index+1}] option \'-i\' can only be given once, (app only supports single file)")
             sys.exit()
         input_file_path = argv[arg_index+1]
+        arg_skip_count += 1
     elif (arg == "-o"):
         if (arg_index +1 >= argc):
             print(f"[{arg_index+1}] option \'-o\' needs argument [file-path]")
@@ -86,6 +87,7 @@ for arg_index in range(1, argc):
             print(f"[{arg_index+1}] option \'-o\' can only be given once, (app only supports single file)")
             sys.exit()
         output_file_path = argv[arg_index+1]
+        arg_skip_count += 1
     elif (arg == "--key-bindings"):
         print("Key bindings (In normal mode):")
         print(" - select color (In normal mode): ", pygame.key.name(key_select_mode_select_color))

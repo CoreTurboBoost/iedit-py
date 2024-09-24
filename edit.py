@@ -11,7 +11,7 @@ if (__name__ != "__main__"):
     sys.exit(1)
 
 VERSION_MAJOR = 0
-VERSION_MINOR = 7
+VERSION_MINOR = 8
 VERSION_PATCH = 0
 
 log = logger.LOG()
@@ -19,8 +19,10 @@ log.set_warnlevel(logger.LOG_level("INFO"))
 
 pygame.init()
 
+key_return_normal_mode = pygame.K_ESCAPE
 key_select_mode_select_color = pygame.K_s
 key_select_mode_set_color = pygame.K_c
+key_layer_mode_toggle = pygame.K_l
 key_resize_editing_surface = pygame.K_r
 key_undo_editing_surface_modification = pygame.K_u
 key_save_editing_surface = pygame.K_w
@@ -33,6 +35,9 @@ key_quit = pygame.K_q
 editing_surface_zoom = 30
 editing_surface_max_zoom = 100
 
+surface_layers = []
+cur_sel_surface_layer_index = 0
+
 argv = sys.argv
 argc = len(argv)
 
@@ -44,13 +49,9 @@ if (argc > 1):
         print( "Description: Pixel art editor with key bindings")
         print(f"\'python3 {argv[0]} --version \' for version infomation")
         print(f"Usage: python3 {argv[0]}")
-        print(f"Usage: python3 {argv[0]} [Options]")
+        print(f"Usage: python3 {argv[0]} [Options] <FILE>...")
         print(f"Options:")
-        print(f"  -i [file-path]  - input image file from [file-path]")
-        print(f"  -o [file-path]  - output image file to [file-path]")
         print(f"  --key-bindings  - output key bindings and exit")
-        print(f"Note:")
-        print(f" Can only use -i or -o alone (not both at same time)")
         sys.exit()
     if (argv[1] == "--version"):
         print(f"VERSION: {VERSION_MAJOR}.{VERSION_MINOR}.{VERSION_PATCH}")
@@ -131,6 +132,7 @@ mode_type_select_color = 1
 mode_type_set_color = 2
 mode_type_save_file = 3
 mode_type_resize_editing_surface = 4
+mode_type_layers = 5
 current_mode = mode_type_normal
 def get_mode_type_code_to_str(mode_type_code):
     if (mode_type_code == mode_type_normal):
@@ -143,6 +145,8 @@ def get_mode_type_code_to_str(mode_type_code):
         return "save file"
     elif (mode_type_code == mode_type_resize_editing_surface):
         return "resize surface"
+    elif (mode_type_code == mode_type_layers):
+        return "layers management"
     else:
         return "unknown"
 
@@ -336,7 +340,7 @@ while True:
 
         if (event.type == pygame.KEYDOWN):
 
-            if (current_mode != mode_type_normal and event.key == pygame.K_ESCAPE):
+            if (current_mode != mode_type_normal and event.key == key_return_normal_mode):
                 log.output(logger.LOG_level("INFO"), f"Escaped to normal mode from {get_mode_type_code_to_str(current_mode)}")
                 current_mode = mode_type_normal
                 current_input_buffer = ""
@@ -402,6 +406,9 @@ while True:
                     continue
                 log.output(logger.LOG_level("INFO"), f"adding color {hover_color} to pallet buffer slot {current_buffer_colors_index}")
                 buffer_colors[current_buffer_colors_index] = hover_color
+            if (current_mode == mode_type_normal and event.key == key_layer_mode_toggle):
+                log.output(logger.LOG_level("INFO"), "Entered layer mode")
+                current_mode = mode_type_layers
                 
             if (event.key == key_confirm):	
                 if (current_mode == mode_type_select_color):

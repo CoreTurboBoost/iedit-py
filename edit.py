@@ -878,6 +878,13 @@ while True:
     screen.blit(display_input_buffer_background_surface, (screen_size[0] - display_input_buffer_surface.get_width() - 5, screen_size[1] - display_input_buffer_surface.get_height() -5))
     screen.blit(display_input_buffer_surface, (screen_size[0] - display_input_buffer_surface.get_width() - 5, screen_size[1] - display_input_buffer_surface.get_height() -5))
 
+    display_layer_index_text = app_font_object.render(f"{current_selected_surface_layer_index}/{len(surface_layers)}", True, (app_text_color))
+    display_layer_index_background = pygame.Surface((display_layer_index_text.get_width()+10, display_layer_index_text.get_height()+10))
+    display_layer_index_background.fill(app_text_background_color)
+    display_layer_index_background.set_alpha(app_text_background_alpha)
+    screen.blit(display_layer_index_background, (screen_size[0] -display_layer_index_background.get_width() -5, display_color_rect_screen_verticle_gap +display_color_rect_size[1] +10 + display_color_rect_text_background_surface.get_height()))
+    screen.blit(display_layer_index_text, (screen_size[0] -display_layer_index_background.get_width(), display_color_rect_screen_verticle_gap +display_color_rect_size[1] +10 +5 + display_color_rect_text_background_surface.get_height()))
+
     if (current_mode == mode_type_resize_editing_surface):
         editing_surface_size_text_surface = app_font_object.render(f"{surface_layers[current_selected_surface_layer_index].get_width()}w {surface_layers[current_selected_surface_layer_index].get_height()}h", True, (app_text_color))
         editing_surface_size_text_background_surface = pygame.Surface((editing_surface_size_text_surface.get_width(), editing_surface_size_text_surface.get_height()))

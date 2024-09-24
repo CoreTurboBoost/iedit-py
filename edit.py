@@ -888,6 +888,4 @@ while True:
 
     # display errors above input buffer
 
-    #debug
-
     pygame.display.update()

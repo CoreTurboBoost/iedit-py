@@ -58,7 +58,7 @@ class UIElement:
         self.frect = pygame.FRect(position, size)
     def handle_event(self, pgevent: pygame.Event) -> None:
         pass
-    def render(self, render_surface: pygame.Surface -> None);
+    def render(self, render_surface: pygame.Surface) -> None:
         pass
     def update(self, delta_time: float) -> None:
         pass
@@ -72,6 +72,9 @@ class State:
     last_mouse_position = (0, 0)
     max_undo_objects = 512
     current_selected_surface_layer_index = 0
+    editing_surface_zoom = 30
+    max_editing_surface_zoom = 100
+    min_editing_surface_zoom = 0
 
 class Mode:
     NORMAL = 0
@@ -82,13 +85,11 @@ class Mode:
     LAYERS = 5
     current = NORMAL
 
-editing_surface_zoom = 30
-editing_surface_max_zoom = 100
-
-per_layer_undo_objects = [[]] * len(input_layer_filepaths)
 
 input_layer_filepaths = []
 surface_layers = []
+
+per_layer_undo_objects = [[]] * len(input_layer_filepaths)
 
 argv = sys.argv
 argc = len(argv)
@@ -309,12 +310,12 @@ class UndoResize(UndoObject):
         return f"UndoResize(old_surface={self.old_surface})"
 
 def add_undo_to_cur_layer(undo_object: UndoObject):
-    global per_layer_undo_objects, State.current_selected_surface_layer_index
+    global per_layer_undo_objects
     per_layer_undo_objects[State.current_selected_surface_layer_index].append(undo_object)
     if (len(per_layer_undo_objects[State.current_selected_surface_layer_index]) > State.max_undo_objects):
         per_layer_undo_objects[State.current_selected_surface_layer_index].pop(0)
 def pop_undo_from_cur_layer() -> UndoObject: # Or return None when empty
-    global per_layer_undo_objects, State.current_selected_surface_layer_index
+    global per_layer_undo_objects
     if len(per_layer_undo_objects[State.current_selected_surface_layer_index]) == 0:
         return None
     return per_layer_undo_objects[State.current_selected_surface_layer_index].pop()
@@ -370,8 +371,8 @@ while True:
             app_font_object = pygame.font.Font(None, app_font_size)
 
         if (event.type == pygame.MOUSEWHEEL):
-            if (0 < editing_surface_zoom + event.y < editing_surface_max_zoom):
-                editing_surface_zoom += event.y
+            if (State.min_editing_surface_zoom < State.editing_surface_zoom + event.y < State.max_editing_surface_zoom):
+                State.editing_surface_zoom += event.y
 
         if (event.type == pygame.MOUSEBUTTONDOWN):
             if (event.button == 1):
@@ -426,8 +427,8 @@ while True:
             if (Mode.current == Mode.NORMAL and event.key == Key.fill_bucket):
                 reverse_camera_mouse_position = camera_reverse_transform(State.last_mouse_position)
                 # assumes editing_surface_screen_proportionality_xy != 0
-                # assumes editing_surface_zoom != 0
-                mouse_position_on_editing_surface_position = (int(reverse_camera_mouse_position[0]/(editing_surface_screen_proportionality_xy[0]*editing_surface_zoom)), int(reverse_camera_mouse_position[1]/(editing_surface_screen_proportionality_xy[1]*editing_surface_zoom)))
+                # assumes State.editing_surface_zoom != 0
+                mouse_position_on_editing_surface_position = (int(reverse_camera_mouse_position[0]/(editing_surface_screen_proportionality_xy[0]*State.editing_surface_zoom)), int(reverse_camera_mouse_position[1]/(editing_surface_screen_proportionality_xy[1]*State.editing_surface_zoom)))
 
                 previous_color = surface_layers[State.current_selected_surface_layer_index].get_at(mouse_position_on_editing_surface_position)
                 fill_color = buffer_colors[current_buffer_colors_index]
@@ -441,7 +442,7 @@ while True:
                     log.output(logger.LOG_level("WARNING"), f"fill_mask is None, failed to bucket fill")
             if (Mode.current == Mode.NORMAL and event.key == Key.pick_color):
                 reversed_camera_mouse_pos = camera_reverse_transform(State.last_mouse_position)
-                current_hovered_pixel_pos = (int(reversed_camera_mouse_pos[0]/(editing_surface_screen_proportionality_xy[0]*editing_surface_zoom)), int(reversed_camera_mouse_pos[1]/(editing_surface_screen_proportionality_xy[1]*editing_surface_zoom)))
+                current_hovered_pixel_pos = (int(reversed_camera_mouse_pos[0]/(editing_surface_screen_proportionality_xy[0]*State.editing_surface_zoom)), int(reversed_camera_mouse_pos[1]/(editing_surface_screen_proportionality_xy[1]*State.editing_surface_zoom)))
                 try:
                     hover_color = surface_layers[State.current_selected_surface_layer_index].get_at((current_hovered_pixel_pos[0], current_hovered_pixel_pos[1]))
                 except IndexError:
@@ -842,14 +843,14 @@ while True:
     if (Mode.current == Mode.NORMAL and State.main_mouse_button_held):
         reverse_camera_mouse_position = camera_reverse_transform(State.last_mouse_position)
         # assumes editing_surface_screen_proportionality_xy != 0
-        # assumes editing_surface_zoom != 0
-        mouse_position_on_editing_surface_position = (int(reverse_camera_mouse_position[0]/(editing_surface_screen_proportionality_xy[0]*editing_surface_zoom)), int(reverse_camera_mouse_position[1]/(editing_surface_screen_proportionality_xy[1]*editing_surface_zoom)))
+        # assumes State.editing_surface_zoom != 0
+        mouse_position_on_editing_surface_position = (int(reverse_camera_mouse_position[0]/(editing_surface_screen_proportionality_xy[0]*State.editing_surface_zoom)), int(reverse_camera_mouse_position[1]/(editing_surface_screen_proportionality_xy[1]*State.editing_surface_zoom)))
         if (mouse_position_on_editing_surface_position[0] < 0 or mouse_position_on_editing_surface_position[1] < 0):
             log.output(logger.LOG_level("ERROR"), f"surface position is negative: {mouse_position_on_editing_surface_position}", write_file_path = "errors.txt")
-            log.output(logger.LOG_level("INFO"), f"Data: mouse_pos:{State.last_mouse_position}, screen_size:{screen_size}, camera_pos:{State.camera_position}, revers_cam_pos:{reverse_camera_mouse_position}, proprotionality_xy:{editing_surface_screen_proportionality_xy}, zoom:{editing_surface_zoom}", write_file_path = "errors.txt")
+            log.output(logger.LOG_level("INFO"), f"Data: mouse_pos:{State.last_mouse_position}, screen_size:{screen_size}, camera_pos:{State.camera_position}, revers_cam_pos:{reverse_camera_mouse_position}, proprotionality_xy:{editing_surface_screen_proportionality_xy}, zoom:{State.editing_surface_zoom}", write_file_path = "errors.txt")
         elif (mouse_position_on_editing_surface_position[0] >= surface_layers[State.current_selected_surface_layer_index].get_width() or mouse_position_on_editing_surface_position[1] >= surface_layers[State.current_selected_surface_layer_index].get_height()):
             log.output(logger.LOG_level("ERROR"), f"surface position is greater or equal surface size: {mouse_position_on_editing_surface_position}", write_file_path = "errors.txt")
-            log.output(logger.LOG_level("INFO"), f"Data: mouse_pos:{State.last_mouse_position}, screen_size:{screen_size}, camera_pos:{State.camera_position}, revers_cam_pos:{reverse_camera_mouse_position}, proprotionality_xy:{editing_surface_screen_proportionality_xy}, zoom:{editing_surface_zoom}", write_file_path = "errors.txt")
+            log.output(logger.LOG_level("INFO"), f"Data: mouse_pos:{State.last_mouse_position}, screen_size:{screen_size}, camera_pos:{State.camera_position}, revers_cam_pos:{reverse_camera_mouse_position}, proprotionality_xy:{editing_surface_screen_proportionality_xy}, zoom:{State.editing_surface_zoom}", write_file_path = "errors.txt")
         elif (buffer_colors[current_buffer_colors_index] != surface_layers[State.current_selected_surface_layer_index].get_at(mouse_position_on_editing_surface_position)):
             color_copy = pygame.Color(surface_layers[State.current_selected_surface_layer_index].get_at(mouse_position_on_editing_surface_position))
             undo_object = UndoSinglePixel(mouse_position_on_editing_surface_position, color_copy)
@@ -865,7 +866,7 @@ while True:
     screen.fill(bg_color)
 
     editing_surface_screen_proportionality_xy = (screen_size[0]/640, screen_size[1]/480)
-    transformed_editing_surface = pygame.transform.scale(surface_layers[State.current_selected_surface_layer_index], (surface_layers[State.current_selected_surface_layer_index].get_width()*editing_surface_screen_proportionality_xy[0]*editing_surface_zoom, surface_layers[State.current_selected_surface_layer_index].get_height()*editing_surface_screen_proportionality_xy[1]*editing_surface_zoom))
+    transformed_editing_surface = pygame.transform.scale(surface_layers[State.current_selected_surface_layer_index], (surface_layers[State.current_selected_surface_layer_index].get_width()*editing_surface_screen_proportionality_xy[0]*State.editing_surface_zoom, surface_layers[State.current_selected_surface_layer_index].get_height()*editing_surface_screen_proportionality_xy[1]*State.editing_surface_zoom))
 
     editing_surface_average_color = pygame.transform.average_color(surface_layers[State.current_selected_surface_layer_index])
     editing_surface_negated_color = pygame.Color(255 - editing_surface_average_color[0], 255 - editing_surface_average_color[1], 255 - editing_surface_average_color[2])
@@ -875,9 +876,9 @@ while True:
         editing_surface_negated_color[2] += 32
     screen.blit(transformed_editing_surface, camera_transform((0, 0)))
     for x in range(surface_layers[State.current_selected_surface_layer_index].get_width()+1):
-        pygame.draw.line(screen, editing_surface_negated_color, camera_transform((x*editing_surface_screen_proportionality_xy[0]*editing_surface_zoom, 0)), camera_transform((x*editing_surface_screen_proportionality_xy[0]*editing_surface_zoom, transformed_editing_surface.get_height())))
+        pygame.draw.line(screen, editing_surface_negated_color, camera_transform((x*editing_surface_screen_proportionality_xy[0]*State.editing_surface_zoom, 0)), camera_transform((x*editing_surface_screen_proportionality_xy[0]*State.editing_surface_zoom, transformed_editing_surface.get_height())))
     for y in range(surface_layers[State.current_selected_surface_layer_index].get_height()+1):
-        pygame.draw.line(screen, editing_surface_negated_color, camera_transform((0, y*editing_surface_screen_proportionality_xy[1]*editing_surface_zoom)), camera_transform((transformed_editing_surface.get_width(), y*editing_surface_screen_proportionality_xy[1]*editing_surface_zoom)))
+        pygame.draw.line(screen, editing_surface_negated_color, camera_transform((0, y*editing_surface_screen_proportionality_xy[1]*State.editing_surface_zoom)), camera_transform((transformed_editing_surface.get_width(), y*editing_surface_screen_proportionality_xy[1]*State.editing_surface_zoom)))
     
     display_color_rect_size = (screen_size[0]//25, screen_size[1]//25)
     display_color_rect_start_x_position = screen_size[0] - (display_color_rect_size[0]+display_color_rect_horizontal_gap)*10 - display_color_rect_horizontal_gap

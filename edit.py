@@ -133,27 +133,33 @@ if (len(input_layer_filepaths) == 0):
     surface_layers.append(pygame.Surface((32, 32), pygame.SRCALPHA))
     input_layer_filepaths.append("a.png")
 
-app_state_unsaved_changes = False
+class State:
+    unsaved_changes: bool = False
+    main_mouse_button_clicked_this_frame = False
+    main_mouse_button_held = False
+    last_mouse_position = (0, 0)
 
-mode_type_normal = 0
-mode_type_select_color = 1
-mode_type_set_color = 2
-mode_type_save_file = 3
-mode_type_resize_editing_surface = 4
-mode_type_layers = 5
-current_mode = mode_type_normal
+class Mode:
+    NORMAL = 0
+    SELECT_COLOR = 1
+    SET_COLOR = 2
+    SAVE_FILE = 3
+    RESIZE_SURFACE = 4
+    LAYERS = 5
+    current = NORMAL
+
 def get_mode_type_code_to_str(mode_type_code):
-    if (mode_type_code == mode_type_normal):
+    if (mode_type_code == Mode.NORMAL):
         return "normal"
-    elif (mode_type_code == mode_type_select_color):
+    elif (mode_type_code == Mode.SELECT_COLOR):
         return "select color"
-    elif (mode_type_code == mode_type_set_color):
+    elif (mode_type_code == Mode.SET_COLOR):
         return "set color"
-    elif (mode_type_code == mode_type_save_file):
+    elif (mode_type_code == Mode.SAVE_FILE):
         return "save file"
-    elif (mode_type_code == mode_type_resize_editing_surface):
+    elif (mode_type_code == Mode.RESIZE_SURFACE):
         return "resize surface"
-    elif (mode_type_code == mode_type_layers):
+    elif (mode_type_code == Mode.LAYERS):
         return "layers management"
     else:
         return "unknown"
@@ -288,10 +294,6 @@ app_font_object = pygame.font.Font(None, app_font_size)
 
 app_text_background_alpha = 150
 
-app_state_mouse_main_click_current_frame = False
-app_state_mouse_main_click_held = False
-app_mouse_last_recored_position = (0, 0)
-
 screen_size = (640, 480)
 screen = pygame.display.set_mode(screen_size, pygame.RESIZABLE)
 editing_surface_screen_proportionality_xy = (screen_size[0]/640, screen_size[1]/480)
@@ -319,10 +321,13 @@ while True:
     delta_time_seconds = time.time() - previous_frame_time
     previous_frame_time = time.time()
 
-    app_state_mouse_main_click_current_frame = False
+    State.main_mouse_button_clicked_this_frame = False
 
+    State.last_mouse_position = pygame.mouse.get_pos()
     for event in pygame.event.get():
-        if (event.type == pygame.QUIT or current_mode == mode_type_normal and event.type == pygame.KEYDOWN and event.key == key_quit):
+        if (event.type == pygame.QUIT or Mode.current == Mode.NORMAL and event.type == pygame.KEYDOWN and event.key == key_quit):
+            if (State.unsaved_changes):
+                print("There are unsaved changes")
             pygame.quit()
             sys.exit()
 
@@ -340,56 +345,55 @@ while True:
         if (event.type == pygame.MOUSEBUTTONDOWN):
             if (event.button == 1):
                 log.output(logger.LOG_level("INFO"), f"Clicked main mouse button")
-                app_state_mouse_main_click_current_frame = True
-                app_state_mouse_main_click_held = True
+                State.main_mouse_button_clicked_this_frame = True
+                State.main_mouse_button_held = True
 
         if (event.type == pygame.MOUSEBUTTONUP):
             if (event.button == 1):
-                app_state_mouse_main_click_held = False
+                State.main_mouse_button_held = False
 
         if (event.type == pygame.KEYDOWN):
 
-            if (current_mode != mode_type_normal and event.key == key_return_normal_mode):
-                log.output(logger.LOG_level("INFO"), f"Escaped to normal mode from {get_mode_type_code_to_str(current_mode)}")
-                current_mode = mode_type_normal
+            if (Mode.current != Mode.NORMAL and event.key == key_return_normal_mode):
+                log.output(logger.LOG_level("INFO"), f"Escaped to normal mode from {get_mode_type_code_to_str(Mode.current)}")
+                Mode.current = Mode.NORMAL
                 current_input_buffer = ""
-            if (current_mode == mode_type_normal and event.key == key_select_mode_select_color):
-                current_mode = mode_type_select_color
-                log.output(logger.LOG_level("INFO"), f"Entered mode {get_mode_type_code_to_str(current_mode)}")
+            if (Mode.current == Mode.NORMAL and event.key == key_select_mode_select_color):
+                Mode.current = Mode.SELECT_COLOR
+                log.output(logger.LOG_level("INFO"), f"Entered mode {get_mode_type_code_to_str(Mode.current)}")
                 current_input_buffer = ""
-            if (current_mode == mode_type_normal and event.key == key_select_mode_set_color):
-                current_mode = mode_type_set_color
-                log.output(logger.LOG_level("INFO"), f"Entered mode {get_mode_type_code_to_str(current_mode)}")
+            if (Mode.current == Mode.NORMAL and event.key == key_select_mode_set_color):
+                Mode.current = Mode.SET_COLOR
+                log.output(logger.LOG_level("INFO"), f"Entered mode {get_mode_type_code_to_str(Mode.current)}")
                 current_input_buffer = ""
-            if (current_mode == mode_type_normal and event.key == key_resize_editing_surface):
-                current_mode = mode_type_resize_editing_surface
-                log.output(logger.LOG_level("INFO"), f"Entered mode {get_mode_type_code_to_str(current_mode)}")
+            if (Mode.current == Mode.NORMAL and event.key == key_resize_editing_surface):
+                Mode.current = Mode.RESIZE_SURFACE
+                log.output(logger.LOG_level("INFO"), f"Entered mode {get_mode_type_code_to_str(Mode.current)}")
                 current_input_buffer = ""
-            if (current_mode == mode_type_normal and event.key == key_move_camera):
+            if (Mode.current == Mode.NORMAL and event.key == key_move_camera):
                 app_state_move_camera = True
-            if (current_mode == mode_type_normal and event.key == key_undo_editing_surface_modification):
+            if (Mode.current == Mode.NORMAL and event.key == key_undo_editing_surface_modification):
                 undo_package = pop_undo_from_cur_layer()
                 if (undo_package != None):
                     log.output(logger.LOG_level("INFO"), f"undoing package {undo_package}")
                     if isinstance(undo_package, UndoSinglePixel):
                         surface_layers[current_selected_surface_layer_index].set_at(undo_package.pixel_position, undo_package.color)
-                        app_state_unsaved_changes = True
+                        State.unsaved_changes = True
                     elif isinstance(undo_package, UndoBucketFill):
                         paint_tool_bucket(surface_layers[current_selected_surface_layer_index], undo_package.pixel_position, undo_package.old_color, undo_package.mask)
-                        app_state_unsaved_changes = True
+                        State.unsaved_changes = True
                     elif isinstance(undo_package, UndoResize):
                         surface_layers[current_selected_surface_layer_index] = undo_package.old_surface
-                        app_state_unsaved_changes = True
+                        State.unsaved_changes = True
                     else:
                         log.output(logger.LOG_level("WARNING"), f"undo package {undo_package} is not handles when undo button pressed")
                     log.output(logger.LOG_level("INFO"), f"Applied undo")
-            if (current_mode == mode_type_normal and event.key == key_save_current_layer_surface):
-                app_state_unsaved_changes = False
+            if (Mode.current == Mode.NORMAL and event.key == key_save_current_layer_surface):
+                State.unsaved_changes = False
                 pygame.image.save(surface_layers[current_selected_surface_layer_index], input_layer_filepaths[current_selected_surface_layer_index])
                 log.output(logger.LOG_level("INFO"), f"Saved current editing surface to {input_layer_filepaths[current_selected_surface_layer_index]}")
-            if (current_mode == mode_type_normal and event.key == key_fill_bucket):
-                mouse_position = pygame.mouse.get_pos()
-                reverse_camera_mouse_position = camera_reverse_transform(mouse_position)
+            if (Mode.current == Mode.NORMAL and event.key == key_fill_bucket):
+                reverse_camera_mouse_position = camera_reverse_transform(State.last_mouse_position)
                 # assumes editing_surface_screen_proportionality_xy != 0
                 # assumes editing_surface_zoom != 0
                 mouse_position_on_editing_surface_position = (int(reverse_camera_mouse_position[0]/(editing_surface_screen_proportionality_xy[0]*editing_surface_zoom)), int(reverse_camera_mouse_position[1]/(editing_surface_screen_proportionality_xy[1]*editing_surface_zoom)))
@@ -397,16 +401,15 @@ while True:
                 previous_color = surface_layers[current_selected_surface_layer_index].get_at(mouse_position_on_editing_surface_position)
                 fill_color = buffer_colors[current_buffer_colors_index]
                 fill_mask = paint_tool_bucket(surface_layers[current_selected_surface_layer_index], pygame.math.Vector2(mouse_position_on_editing_surface_position), fill_color)
-                app_state_unsaved_changes = True
+                State.unsaved_changes = True
 
                 if (fill_mask != None):
                     undo_object = UndoBucketFill(pygame.math.Vector2(mouse_position_on_editing_surface_position), previous_color, fill_mask)
                     add_undo_to_cur_layer(undo_object)
                 else:
                     log.output(logger.LOG_level("WARNING"), f"fill_mask is None, failed to bucket fill")
-            if (current_mode == mode_type_normal and event.key == key_pick_color):
-                mouse_screen_pos = pygame.mouse.get_pos()
-                reversed_camera_mouse_pos = camera_reverse_transform(mouse_screen_pos)
+            if (Mode.current == Mode.NORMAL and event.key == key_pick_color):
+                reversed_camera_mouse_pos = camera_reverse_transform(State.last_mouse_position)
                 current_hovered_pixel_pos = (int(reversed_camera_mouse_pos[0]/(editing_surface_screen_proportionality_xy[0]*editing_surface_zoom)), int(reversed_camera_mouse_pos[1]/(editing_surface_screen_proportionality_xy[1]*editing_surface_zoom)))
                 try:
                     hover_color = surface_layers[current_selected_surface_layer_index].get_at((current_hovered_pixel_pos[0], current_hovered_pixel_pos[1]))
@@ -415,18 +418,18 @@ while True:
                     continue
                 log.output(logger.LOG_level("INFO"), f"adding color {hover_color} to pallet buffer slot {current_buffer_colors_index}")
                 buffer_colors[current_buffer_colors_index] = hover_color
-            if (current_mode == mode_type_normal and event.key == key_layer_mode_toggle):
+            if (Mode.current == Mode.NORMAL and event.key == key_layer_mode_toggle):
                 log.output(logger.LOG_level("INFO"), "Entered layer mode")
-                current_mode = mode_type_layers
+                Mode.current = Mode.LAYERS
                 # Edit each layers' surface blend mode here.
 
             if (event.key == key_confirm):
-                if (current_mode == mode_type_select_color):
-                    current_mode = mode_type_normal
-                    log.output(logger.LOG_level("INFO"), f"Entered mode {get_mode_type_code_to_str(current_mode)}")
-                if (current_mode == mode_type_set_color):
-                    current_mode = mode_type_normal
-                    log.output(logger.LOG_level("INFO"), f"Entered mode {get_mode_type_code_to_str(current_mode)}")
+                if (Mode.current == Mode.SELECT_COLOR):
+                    Mode.current = Mode.NORMAL
+                    log.output(logger.LOG_level("INFO"), f"Entered mode {get_mode_type_code_to_str(Mode.current)}")
+                if (Mode.current == Mode.SET_COLOR):
+                    Mode.current = Mode.NORMAL
+                    log.output(logger.LOG_level("INFO"), f"Entered mode {get_mode_type_code_to_str(Mode.current)}")
                     current_color_channel = None
                     final_color = buffer_colors[current_buffer_colors_index]
                     current_number_str = ""
@@ -514,8 +517,8 @@ while True:
                             if (int(current_number_str) < 256):
                                 final_color.a = int(current_number_str)
 
-                if (current_mode == mode_type_resize_editing_surface):
-                    current_mode = mode_type_normal
+                if (Mode.current == Mode.RESIZE_SURFACE):
+                    Mode.current = Mode.NORMAL
 
                     undo_object = UndoResize(surface_layers[current_selected_surface_layer_index])
                     add_undo_to_cur_layer(undo_object)
@@ -538,15 +541,15 @@ while True:
                         if (char.isdigit()):
                             number_str += char
                     surface_layers[current_selected_surface_layer_index] = pygame.transform.scale(surface_layers[current_selected_surface_layer_index], (width, height))
-                    app_state_unsaved_changes = True
+                    State.unsaved_changes = True
                     log.output(logger.LOG_level("INFO"), f"Changed editing surface size to ({surface_layers[current_selected_surface_layer_index].get_width()}, {surface_layers[current_selected_surface_layer_index].get_height()})")
 
             if (event.key == pygame.K_0 or event.key == pygame.K_KP0):
-                if (current_mode == mode_type_select_color):
+                if (Mode.current == Mode.SELECT_COLOR):
                     current_buffer_colors_index = 9
-                    current_mode = mode_type_normal
-                    log.output(logger.LOG_level("INFO"), f"Entered {get_mode_type_code_to_str(current_mode)}")
-                if (current_mode == mode_type_set_color):
+                    Mode.current = Mode.NORMAL
+                    log.output(logger.LOG_level("INFO"), f"Entered {get_mode_type_code_to_str(Mode.current)}")
+                if (Mode.current == Mode.SET_COLOR):
                     if (len(current_input_buffer) >= 2):
                         if (current_input_buffer[-1].isdigit() and current_input_buffer[-2].isdigit()):
                             value = int(current_input_buffer[-2] + current_input_buffer[-1] + "0")
@@ -559,15 +562,15 @@ while True:
                     if (len(current_input_buffer) +1 <= max_input_buffer_len):
                         current_input_buffer += "0"
                         log.output(logger.LOG_level("INFO"), f"Entered {current_input_buffer}")
-                if (current_mode == mode_type_resize_editing_surface):
+                if (Mode.current == Mode.RESIZE_SURFACE):
                     if (len(current_input_buffer)+1 <= max_input_buffer_len):
                         current_input_buffer += "0"
             if (event.key == pygame.K_1 or event.key == pygame.K_KP1):
-                if (current_mode == mode_type_select_color):
+                if (Mode.current == Mode.SELECT_COLOR):
                     current_buffer_colors_index = 0
-                    current_mode = mode_type_normal
-                    log.output(logger.LOG_level("INFO"), f"Entered {get_mode_type_code_to_str(current_mode)}")
-                if (current_mode == mode_type_set_color):
+                    Mode.current = Mode.NORMAL
+                    log.output(logger.LOG_level("INFO"), f"Entered {get_mode_type_code_to_str(Mode.current)}")
+                if (Mode.current == Mode.SET_COLOR):
                     if (len(current_input_buffer) >= 2):
                         if (current_input_buffer[-1].isdigit() and current_input_buffer[-2].isdigit()):
                             value = int(current_input_buffer[-2] + current_input_buffer[-1] + "1")
@@ -580,15 +583,15 @@ while True:
                     if (len(current_input_buffer) +1 <= max_input_buffer_len):
                         current_input_buffer += "1"
                         log.output(logger.LOG_level("INFO"), f"Entered {current_input_buffer}")
-                if (current_mode == mode_type_resize_editing_surface):
+                if (Mode.current == Mode.RESIZE_SURFACE):
                     if (len(current_input_buffer)+1 <= max_input_buffer_len):
                         current_input_buffer += "1"
             if (event.key == pygame.K_2 or event.key == pygame.K_KP2):
-                if (current_mode == mode_type_select_color):
+                if (Mode.current == Mode.SELECT_COLOR):
                     current_buffer_colors_index = 1
-                    current_mode = mode_type_normal
-                    log.output(logger.LOG_level("INFO"), f"Entered {get_mode_type_code_to_str(current_mode)}")
-                if (current_mode == mode_type_set_color):
+                    Mode.current = Mode.NORMAL
+                    log.output(logger.LOG_level("INFO"), f"Entered {get_mode_type_code_to_str(Mode.current)}")
+                if (Mode.current == Mode.SET_COLOR):
                     if (len(current_input_buffer) >= 2):
                         if (current_input_buffer[-1].isdigit() and current_input_buffer[-2].isdigit()):
                             value = int(current_input_buffer[-2] + current_input_buffer[-1] + "2")
@@ -601,15 +604,15 @@ while True:
                     if (len(current_input_buffer) +1 <= max_input_buffer_len):
                         current_input_buffer += "2"
                         log.output(logger.LOG_level("INFO"), f"Entered {current_input_buffer}")
-                if (current_mode == mode_type_resize_editing_surface):
+                if (Mode.current == Mode.RESIZE_SURFACE):
                     if (len(current_input_buffer)+1 <= max_input_buffer_len):
                         current_input_buffer += "2"
             if (event.key == pygame.K_3 or event.key == pygame.K_KP3):
-                if (current_mode == mode_type_select_color):
+                if (Mode.current == Mode.SELECT_COLOR):
                     current_buffer_colors_index = 2
-                    current_mode = mode_type_normal
-                    log.output(logger.LOG_level("INFO"), f"Entered {get_mode_type_code_to_str(current_mode)}")
-                if (current_mode == mode_type_set_color):
+                    Mode.current = Mode.NORMAL
+                    log.output(logger.LOG_level("INFO"), f"Entered {get_mode_type_code_to_str(Mode.current)}")
+                if (Mode.current == Mode.SET_COLOR):
                     if (len(current_input_buffer) >= 2):
                         if (current_input_buffer[-1].isdigit() and current_input_buffer[-2].isdigit()):
                             value = int(current_input_buffer[-2] + current_input_buffer[-1] + "3")
@@ -622,15 +625,15 @@ while True:
                     if (len(current_input_buffer) +1 <= max_input_buffer_len):
                         current_input_buffer += "3"
                         log.output(logger.LOG_level("INFO"), f"Entered {current_input_buffer}")
-                if (current_mode == mode_type_resize_editing_surface):
+                if (Mode.current == Mode.RESIZE_SURFACE):
                     if (len(current_input_buffer)+1 <= max_input_buffer_len):
                         current_input_buffer += "3"
             if (event.key == pygame.K_4 or event.key == pygame.K_KP4):
-                if (current_mode == mode_type_select_color):
+                if (Mode.current == Mode.SELECT_COLOR):
                     current_buffer_colors_index = 3
-                    current_mode = mode_type_normal
-                    log.output(logger.LOG_level("INFO"), f"Entered {get_mode_type_code_to_str(current_mode)}")
-                if (current_mode == mode_type_set_color):
+                    Mode.current = Mode.NORMAL
+                    log.output(logger.LOG_level("INFO"), f"Entered {get_mode_type_code_to_str(Mode.current)}")
+                if (Mode.current == Mode.SET_COLOR):
                     if (len(current_input_buffer) >= 2):
                         if (current_input_buffer[-1].isdigit() and current_input_buffer[-2].isdigit()):
                             value = int(current_input_buffer[-2] + current_input_buffer[-1] + "4")
@@ -643,15 +646,15 @@ while True:
                     if (len(current_input_buffer) +1 <= max_input_buffer_len):
                         current_input_buffer += "4"
                         log.output(logger.LOG_level("INFO"), f"Entered {current_input_buffer}")
-                if (current_mode == mode_type_resize_editing_surface):
+                if (Mode.current == Mode.RESIZE_SURFACE):
                     if (len(current_input_buffer)+1 <= max_input_buffer_len):
                         current_input_buffer += "4"
             if (event.key == pygame.K_5 or event.key == pygame.K_KP5):
-                if (current_mode == mode_type_select_color):
+                if (Mode.current == Mode.SELECT_COLOR):
                     current_buffer_colors_index = 4
-                    current_mode = mode_type_normal
-                    log.output(logger.LOG_level("INFO"), f"Entered {get_mode_type_code_to_str(current_mode)}")
-                if (current_mode == mode_type_set_color):
+                    Mode.current = Mode.NORMAL
+                    log.output(logger.LOG_level("INFO"), f"Entered {get_mode_type_code_to_str(Mode.current)}")
+                if (Mode.current == Mode.SET_COLOR):
                     if (len(current_input_buffer) >= 2):
                         if (current_input_buffer[-1].isdigit() and current_input_buffer[-2].isdigit()):
                             value = int(current_input_buffer[-2] + current_input_buffer[-1] + "5")
@@ -664,15 +667,15 @@ while True:
                     if (len(current_input_buffer) +1 <= max_input_buffer_len):
                         current_input_buffer += "5"
                         log.output(logger.LOG_level("INFO"), f"Entered {current_input_buffer}")
-                if (current_mode == mode_type_resize_editing_surface):
+                if (Mode.current == Mode.RESIZE_SURFACE):
                     if (len(current_input_buffer)+1 <= max_input_buffer_len):
                         current_input_buffer += "5"
             if (event.key == pygame.K_6 or event.key == pygame.K_KP6):
-                if (current_mode == mode_type_select_color):
+                if (Mode.current == Mode.SELECT_COLOR):
                     current_buffer_colors_index = 5
-                    current_mode = mode_type_normal
-                    log.output(logger.LOG_level("INFO"), f"Entered {get_mode_type_code_to_str(current_mode)}")
-                if (current_mode == mode_type_set_color):
+                    Mode.current = Mode.NORMAL
+                    log.output(logger.LOG_level("INFO"), f"Entered {get_mode_type_code_to_str(Mode.current)}")
+                if (Mode.current == Mode.SET_COLOR):
                     if (len(current_input_buffer) >= 2):
                         if (current_input_buffer[-1].isdigit() and current_input_buffer[-2].isdigit()):
                             value = int(current_input_buffer[-2] + current_input_buffer[-1] + "6")
@@ -685,15 +688,15 @@ while True:
                     if (len(current_input_buffer) +1 <= max_input_buffer_len):
                         current_input_buffer += "6"
                         log.output(logger.LOG_level("INFO"), f"Entered {current_input_buffer}")
-                if (current_mode == mode_type_resize_editing_surface):
+                if (Mode.current == Mode.RESIZE_SURFACE):
                     if (len(current_input_buffer)+1 <= max_input_buffer_len):
                         current_input_buffer += "6"
             if (event.key == pygame.K_7 or event.key == pygame.K_KP7):
-                if (current_mode == mode_type_select_color):
+                if (Mode.current == Mode.SELECT_COLOR):
                     current_buffer_colors_index = 6
-                    current_mode = mode_type_normal
-                    log.output(logger.LOG_level("INFO"), f"Entered {get_mode_type_code_to_str(current_mode)}")
-                if (current_mode == mode_type_set_color):
+                    Mode.current = Mode.NORMAL
+                    log.output(logger.LOG_level("INFO"), f"Entered {get_mode_type_code_to_str(Mode.current)}")
+                if (Mode.current == Mode.SET_COLOR):
                     if (len(current_input_buffer) >= 2):
                         if (current_input_buffer[-1].isdigit() and current_input_buffer[-2].isdigit()):
                             value = int(current_input_buffer[-2] + current_input_buffer[-1] + "7")
@@ -706,15 +709,15 @@ while True:
                     if (len(current_input_buffer) +1 <= max_input_buffer_len):
                         current_input_buffer += "7"
                         log.output(logger.LOG_level("INFO"), f"Entered {current_input_buffer}")
-                if (current_mode == mode_type_resize_editing_surface):
+                if (Mode.current == Mode.RESIZE_SURFACE):
                     if (len(current_input_buffer)+1 <= max_input_buffer_len):
                         current_input_buffer += "7"
             if (event.key == pygame.K_8 or event.key == pygame.K_KP8):
-                if (current_mode == mode_type_select_color):
+                if (Mode.current == Mode.SELECT_COLOR):
                     current_buffer_colors_index = 7
-                    current_mode = mode_type_normal
-                    log.output(logger.LOG_level("INFO"), f"Entered {get_mode_type_code_to_str(current_mode)}")
-                if (current_mode == mode_type_set_color):
+                    Mode.current = Mode.NORMAL
+                    log.output(logger.LOG_level("INFO"), f"Entered {get_mode_type_code_to_str(Mode.current)}")
+                if (Mode.current == Mode.SET_COLOR):
                     if (len(current_input_buffer) >= 2):
                         if (current_input_buffer[-1].isdigit() and current_input_buffer[-2].isdigit()):
                             value = int(current_input_buffer[-2] + current_input_buffer[-1] + "8")
@@ -727,15 +730,15 @@ while True:
                     if (len(current_input_buffer) +1 <= max_input_buffer_len):
                         current_input_buffer += "8"
                         log.output(logger.LOG_level("INFO"), f"Entered {current_input_buffer}")
-                if (current_mode == mode_type_resize_editing_surface):
+                if (Mode.current == Mode.RESIZE_SURFACE):
                     if (len(current_input_buffer)+1 <= max_input_buffer_len):
                         current_input_buffer += "8"
             if (event.key == pygame.K_9 or event.key == pygame.K_KP9):
-                if (current_mode == mode_type_select_color):
+                if (Mode.current == Mode.SELECT_COLOR):
                     current_buffer_colors_index = 8
-                    current_mode = mode_type_normal
-                    log.output(logger.LOG_level("INFO"), f"Entered {get_mode_type_code_to_str(current_mode)}")
-                if (current_mode == mode_type_set_color):
+                    Mode.current = Mode.NORMAL
+                    log.output(logger.LOG_level("INFO"), f"Entered {get_mode_type_code_to_str(Mode.current)}")
+                if (Mode.current == Mode.SET_COLOR):
                     if (len(current_input_buffer) >= 2):
                         if (current_input_buffer[-1].isdigit() and current_input_buffer[-2].isdigit()):
                             value = int(current_input_buffer[-2] + current_input_buffer[-1] + "9")
@@ -748,51 +751,51 @@ while True:
                     if (len(current_input_buffer) +1 <= 16):
                         current_input_buffer += "9"
                         log.output(logger.LOG_level("INFO"), f"Entered {current_input_buffer}")
-                if (current_mode == mode_type_resize_editing_surface):
+                if (Mode.current == Mode.RESIZE_SURFACE):
                     if (len(current_input_buffer)+1 <= max_input_buffer_len):
                         current_input_buffer += "9"
 
             if (event.key == pygame.K_r):
-                if (current_mode == mode_type_set_color):
+                if (Mode.current == Mode.SET_COLOR):
                     current_input_buffer += "r"
                     log.output(logger.LOG_level("INFO"), f"Entered {current_input_buffer}")
             if (event.key == pygame.K_g):
-                if (current_mode == mode_type_set_color):
+                if (Mode.current == Mode.SET_COLOR):
                     current_input_buffer += "g"
                     log.output(logger.LOG_level("INFO"), f"Entered {current_input_buffer}")
             if (event.key == pygame.K_b):
-                if (current_mode == mode_type_set_color):
+                if (Mode.current == Mode.SET_COLOR):
                     current_input_buffer += "b"
                     log.output(logger.LOG_level("INFO"), f"Entered {current_input_buffer}")
             if (event.key == pygame.K_a):
-                if (current_mode == mode_type_set_color):
+                if (Mode.current == Mode.SET_COLOR):
                     current_input_buffer += "a"
                     log.output(logger.LOG_level("INFO"), f"Entered {current_input_buffer}")
 
             if (event.key == pygame.K_w):
-                if (current_mode == mode_type_resize_editing_surface):
+                if (Mode.current == Mode.RESIZE_SURFACE):
                     if (len(current_input_buffer)+1 <= max_input_buffer_len):
                         current_input_buffer += "w"
             if (event.key == pygame.K_h):
-                if (current_mode == mode_type_resize_editing_surface):
+                if (Mode.current == Mode.RESIZE_SURFACE):
                     if (len(current_input_buffer)+1 <= max_input_buffer_len):
                         current_input_buffer += "h"
 
             if (event.key == pygame.K_BACKSPACE):
-                if (current_mode == mode_type_set_color):
+                if (Mode.current == Mode.SET_COLOR):
                     current_input_buffer = ""
-                    current_mode = mode_type_normal
+                    Mode.current = Mode.NORMAL
                     log.output(logger.LOG_level("INFO"), f"Changed mode to normal from set color")
-                if (current_mode == mode_type_resize_editing_surface):
+                if (Mode.current == Mode.RESIZE_SURFACE):
                     current_input_buffer = ""
-                    current_mode = mode_type_normal
+                    Mode.current = Mode.NORMAL
                     log.output(logger.LOG_level("INFO"), f"Changed mode to normal from resize surface")
 
         if (event.type == pygame.KEYUP):
             if (event.key == key_move_camera):
                 app_state_move_camera = False
 
-    if (current_mode == mode_type_normal and app_state_move_camera):
+    if (Mode.current == Mode.NORMAL and app_state_move_camera):
         mouse_pos = list(pygame.mouse.get_pos())
         mouse_pos[0] -= screen_size[0]/2
         mouse_pos[1] -= screen_size[1]/2
@@ -805,18 +808,17 @@ while True:
         camera_position[0] += int(mouse_pos[0])
         camera_position[1] += int(mouse_pos[1])
 
-    if (current_mode == mode_type_normal and app_state_mouse_main_click_held):
-        mouse_position = pygame.mouse.get_pos()
-        reverse_camera_mouse_position = camera_reverse_transform(mouse_position)
+    if (Mode.current == Mode.NORMAL and State.main_mouse_button_held):
+        reverse_camera_mouse_position = camera_reverse_transform(State.last_mouse_position)
         # assumes editing_surface_screen_proportionality_xy != 0
         # assumes editing_surface_zoom != 0
         mouse_position_on_editing_surface_position = (int(reverse_camera_mouse_position[0]/(editing_surface_screen_proportionality_xy[0]*editing_surface_zoom)), int(reverse_camera_mouse_position[1]/(editing_surface_screen_proportionality_xy[1]*editing_surface_zoom)))
         if (mouse_position_on_editing_surface_position[0] < 0 or mouse_position_on_editing_surface_position[1] < 0):
             log.output(logger.LOG_level("ERROR"), f"surface position is negative: {mouse_position_on_editing_surface_position}", write_file_path = "errors.txt")
-            log.output(logger.LOG_level("INFO"), f"Data: mouse_pos:{mouse_position}, screen_size:{screen_size}, camera_pos:{camera_position}, revers_cam_pos:{reverse_camera_mouse_position}, proprotionality_xy:{editing_surface_screen_proportionality_xy}, zoom:{editing_surface_zoom}", write_file_path = "errors.txt")
+            log.output(logger.LOG_level("INFO"), f"Data: mouse_pos:{State.last_mouse_position}, screen_size:{screen_size}, camera_pos:{camera_position}, revers_cam_pos:{reverse_camera_mouse_position}, proprotionality_xy:{editing_surface_screen_proportionality_xy}, zoom:{editing_surface_zoom}", write_file_path = "errors.txt")
         elif (mouse_position_on_editing_surface_position[0] >= surface_layers[current_selected_surface_layer_index].get_width() or mouse_position_on_editing_surface_position[1] >= surface_layers[current_selected_surface_layer_index].get_height()):
             log.output(logger.LOG_level("ERROR"), f"surface position is greater or equal surface size: {mouse_position_on_editing_surface_position}", write_file_path = "errors.txt")
-            log.output(logger.LOG_level("INFO"), f"Data: mouse_pos:{mouse_position}, screen_size:{screen_size}, camera_pos:{camera_position}, revers_cam_pos:{reverse_camera_mouse_position}, proprotionality_xy:{editing_surface_screen_proportionality_xy}, zoom:{editing_surface_zoom}", write_file_path = "errors.txt")
+            log.output(logger.LOG_level("INFO"), f"Data: mouse_pos:{State.last_mouse_position}, screen_size:{screen_size}, camera_pos:{camera_position}, revers_cam_pos:{reverse_camera_mouse_position}, proprotionality_xy:{editing_surface_screen_proportionality_xy}, zoom:{editing_surface_zoom}", write_file_path = "errors.txt")
         elif (buffer_colors[current_buffer_colors_index] != surface_layers[current_selected_surface_layer_index].get_at(mouse_position_on_editing_surface_position)):
             color_copy = pygame.Color(surface_layers[current_selected_surface_layer_index].get_at(mouse_position_on_editing_surface_position))
             undo_object = UndoSinglePixel(mouse_position_on_editing_surface_position, color_copy)
@@ -825,7 +827,7 @@ while True:
             log.output(logger.LOG_level("INFO"), f"setting color: {buffer_colors[current_buffer_colors_index]}, at {mouse_position_on_editing_surface_position}")
 
             surface_layers[current_selected_surface_layer_index].set_at(mouse_position_on_editing_surface_position, buffer_colors[current_buffer_colors_index])
-            app_state_unsaved_changes = True
+            State.unsaved_changes = True
 
             log.output(logger.LOG_level("INFO"), f"Set color: {surface_layers[current_selected_surface_layer_index].get_at(mouse_position_on_editing_surface_position)} at {mouse_position_on_editing_surface_position}")
 
@@ -863,7 +865,7 @@ while True:
     screen.blit(display_color_rect_text_background_surface, (screen_size[0] - display_color_rect_text_background_surface.get_width() - 5, display_color_rect_screen_verticle_gap + display_color_rect_size[1] + 5))
     screen.blit(display_color_rect_text_surface, (screen_size[0] - display_color_rect_text_background_surface.get_width() - 5, display_color_rect_screen_verticle_gap + display_color_rect_size[1] + 5))
 
-    display_mode_text_surface = app_font_object.render(f"--{get_mode_type_code_to_str(current_mode)}--", True, (app_text_color))
+    display_mode_text_surface = app_font_object.render(f"--{get_mode_type_code_to_str(Mode.current)}--", True, (app_text_color))
     display_mode_text_background_surface = pygame.Surface((display_mode_text_surface.get_width(), display_mode_text_surface.get_height()))
     display_mode_text_background_surface.fill(app_text_background_color)
     display_mode_text_background_surface.set_alpha(app_text_background_alpha)
@@ -885,7 +887,7 @@ while True:
     screen.blit(display_layer_index_background, (screen_size[0] -display_layer_index_background.get_width() -5, display_color_rect_screen_verticle_gap +display_color_rect_size[1] +10 + display_color_rect_text_background_surface.get_height()))
     screen.blit(display_layer_index_text, (screen_size[0] -display_layer_index_background.get_width(), display_color_rect_screen_verticle_gap +display_color_rect_size[1] +10 +5 + display_color_rect_text_background_surface.get_height()))
 
-    if (current_mode == mode_type_resize_editing_surface):
+    if (Mode.current == Mode.RESIZE_SURFACE):
         editing_surface_size_text_surface = app_font_object.render(f"{surface_layers[current_selected_surface_layer_index].get_width()}w {surface_layers[current_selected_surface_layer_index].get_height()}h", True, (app_text_color))
         editing_surface_size_text_background_surface = pygame.Surface((editing_surface_size_text_surface.get_width(), editing_surface_size_text_surface.get_height()))
         editing_surface_size_text_background_surface.fill(app_text_background_color)

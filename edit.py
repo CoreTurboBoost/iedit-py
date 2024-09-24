@@ -33,35 +33,6 @@ class Key:
     move_camera = pygame.K_m
     fill_bucket = pygame.K_f
     quit = pygame.K_q
-
-class ImageLayerBuffer:
-    def __init__(self, filepath: str):
-        self.filepath = filepath
-        self.surface = None
-        self.undo_object = []
-    def load(self) -> (bool, str):
-        error_str = ""
-        try:
-            self.surface = pygame.image.load(self.filepath)
-        except FileNotFoundError:
-            error_str = "File '{self.filepath}' was not found"
-            self.surface = None
-            return (True, error_str)
-        except pygame.error:
-            error_str = "Pygame error: {sys.exc_info()[1]}"
-            self.surface = None
-            return (True, error_str)
-        return (False, "")
-
-class UIElement:
-    def __init__(self, position: Vec2, size: Vec2):
-        self.frect = pygame.FRect(position, size)
-    def handle_event(self, pgevent: pygame.Event) -> None:
-        pass
-    def render(self, render_surface: pygame.Surface) -> None:
-        pass
-    def update(self, delta_time: float) -> None:
-        pass
             
 class State:
     unsaved_changes: bool = False
@@ -85,6 +56,58 @@ class Mode:
     LAYERS = 5
     current = NORMAL
 
+class ImageLayerBuffer:
+    def __init__(self, filepath: str):
+        self.filepath = filepath
+        self.surface = None
+        self.undo_object = []
+    def load(self) -> (bool, str):
+        error_str = ""
+        try:
+            self.surface = pygame.image.load(self.filepath)
+        except FileNotFoundError:
+            error_str = "File '{self.filepath}' was not found"
+            self.surface = None
+            return (True, error_str)
+        except pygame.error:
+            error_str = "Pygame error: {sys.exc_info()[1]}"
+            self.surface = None
+            return (True, error_str)
+        return (False, "")
+
+app_font_size = 20
+app_font_object = pygame.font.Font(None, app_font_size)
+
+class UITextElement:
+    def __init__(self, position: Vec2, text: str, frame_x_px_margin: int, frame_y_px_margin: int):
+        self.text: str = ""
+        if not isinstance(positions, Vec2):
+            position = Vec2(position)
+        self.position = position
+        self.margin: Vec2 = Vec2(frame_x_px_margin, frame_y_px_margin)
+        self.regenerate_surfaces()
+    def get_width(self) -> int:
+        return self.bg_surface.get_width()
+    def get_height(self) -> int:
+        return self.bg_surface.get_height()
+    def get_size(self) -> Vec2:
+        return Vec2(self.get_width(), self.get_height())
+    def get_pos(self) -> Vec2:
+        return self.position
+    def handle_event(self, pgevent: pygame.Event) -> bool: 
+        '''
+        Return True, if pgevent was used/handled internally
+        '''
+        pass
+    def render(self, render_surface: pygame.Surface) -> None:
+        render_surface.blit(self.text_surface, self.position+self.margin
+        render_surface.blit(self.bg_surface, self.position)
+    def regenerate_surfaces(self) -> None:
+        self.text_surface: pygame.Surface = app_font_object.render(self.text, True, app_text_color)
+        self.bg_surface: pygame.Surface = pygame.Surface((self.text_surface.get_width()+self.margin.x*2, self.text_surface.get_height()+self.margin.y*2))
+    def update_text(self, new_text: str) -> None:
+        self.text = new_text
+        self.regenerate_surfaces()
 
 input_layer_filepaths = []
 surface_layers = []
@@ -322,9 +345,6 @@ def pop_undo_from_cur_layer() -> UndoObject: # Or return None when empty
 
 display_color_rect_horizontal_gap = 5 # pixels
 display_color_rect_screen_verticle_gap = 10 # pixels
-
-app_font_size = 20
-app_font_object = pygame.font.Font(None, app_font_size)
 
 app_text_background_alpha = 150
 

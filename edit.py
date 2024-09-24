@@ -134,6 +134,16 @@ if (len(input_layer_filepaths) == 0):
     surface_layers.append(pygame.Surface((32, 32), pygame.SRCALPHA))
     input_layer_filepaths.append("a.png")
 
+class UIElement:
+    def __init__(self, position: Vec2, size: Vec2):
+        self.frect = pygame.FRect(position, size)
+    def handle_event(self, pgevent: pygame.Event) -> None:
+        pass
+    def render(self, render_surface: pygame.Surface -> None);
+        pass
+    def update(self, delta_time: float) -> None:
+        pass
+
 class ImageLayerBuffer:
     def __init__(self, filepath: str):
         self.filepath = filepath

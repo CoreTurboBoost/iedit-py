@@ -102,22 +102,31 @@ if (cli_error_count > 0):
 del cli_error_count
 
 load_file_error_count = 0
+handled_filepaths = []
 for input_filepath in input_layer_filepaths:
-    if (input_filepath != None):
-        try:
-            input_surface = pygame.image.load(input_filepath)
-        except FileNotFoundError:
-            print(f"Could not load file \'{input_filepath}\'")
-            load_file_error_count += 1
-            continue
-        except pygame.error:
-            print(f"Pygame could not load in the image, {sys.exc_info()[1]}")
-            load_file_error_count += 1
-            continue
-        surface_layers.append(input_surface)
+    try:
+        input_surface = pygame.image.load(input_filepath)
+    except FileNotFoundError:
+        print(f"Could not load file \'{input_filepath}\'")
+        input_surface = None
+    except pygame.error:
+        print(f"Pygame could not load in the image, {sys.exc_info()[1]}")
+        load_file_error_count += 1
+        continue
+    if (input_filepath in handled_filepaths):
+        print(f"Layers cannot have the same file paths, path '{input_filepath}'")
+        load_file_error_count += 1
+        continue
+    handled_filepaths.append(input_filepath)
+    if (input_surface == None):
+        print(f"Making a new image surface for layer '{input_filepath}'")
+        input_surface = pygame.Surface((32, 32), pygame.SRCALPHA)
+    surface_layers.append(input_surface)
 if (load_file_error_count > 0):
     sys.exit(f"Exiting. {load_file_error_count} error(s) occured when loading image files from disk")
 del load_file_error_count
+
+assume_or_exception(len(input_layer_filepaths) == len(surface_layers))
 
 if (len(input_layer_filepaths) == 0):
     print("No input image files given. Loading a default surface. Setting output file to 'a.png'.")

@@ -11,8 +11,8 @@ if (__name__ != "__main__"):
     sys.exit(1)
 
 VERSION_MAJOR = 0
-VERSION_MINOR = 6
-VERSION_PATCH = 2
+VERSION_MINOR = 7
+VERSION_PATCH = 0
 
 log = logger.LOG()
 log.set_warnlevel(logger.LOG_level("INFO"))
@@ -24,6 +24,7 @@ key_select_mode_set_color = pygame.K_c
 key_resize_editing_surface = pygame.K_r
 key_undo_editing_surface_modification = pygame.K_u
 key_save_editing_surface = pygame.K_w
+key_pick_color = pygame.K_p
 key_confirm = pygame.K_RETURN
 key_move_camera = pygame.K_m
 key_fill_bucket = pygame.K_f
@@ -92,6 +93,7 @@ for arg_index in range(1, argc):
         print(" - resize editing surface (In normal mode): ", pygame.key.name(key_resize_editing_surface))
         print(" - undo editing surface modification (In normal mode): ", pygame.key.name(key_undo_editing_surface_modification))
         print(" - save editing surface (In normal mode): ", pygame.key.name(key_save_editing_surface))
+        print(" - pick current hovered color (In normal mode): ", pygame.key.name(key_pick_color))
         print(" - confirm (In any mode, used for prompts): ", pygame.key.name(key_confirm))
         print(" - fill bucket paint brush (In normal mode): " , pygame.key.name(key_fill_bucket))
         print(" - quit program without saving (or save warning) (In normal mode): ", pygame.key.name(key_quit))
@@ -387,6 +389,18 @@ while True:
                     add_to_undo_buffer(undo_object)
                 else:
                     log.output(logger.LOG_level("WARNING"), f"fill_mask is None, failed to bucket fill")
+            if (current_mode == mode_type_normal and event.key == key_pick_color):
+                mouse_screen_pos = pygame.mouse.get_pos()
+                reversed_camera_mouse_pos = camera_reverse_transform(mouse_screen_pos)
+                current_hovered_pixel_pos = (int(reversed_camera_mouse_pos[0]/(editing_surface_screen_proportionality_xy[0]*editing_surface_zoom)), int(reversed_camera_mouse_pos[1]/(editing_surface_screen_proportionality_xy[1]*editing_surface_zoom)))
+                try:
+                    hover_color = editing_surface.get_at((current_hovered_pixel_pos[0], current_hovered_pixel_pos[1]))
+                except IndexError:
+                    log.output(logger.LOG_level("WARNING"), "Position given is invalid")
+                    continue
+                log.output(logger.LOG_level("INFO"), f"adding color {hover_color} to pallet buffer slot {current_buffer_colors_index}")
+                buffer_colors[current_buffer_colors_index] = hover_color
+                
             if (event.key == key_confirm):	
                 if (current_mode == mode_type_select_color):
                     current_mode = mode_type_normal

@@ -385,15 +385,15 @@ while True:
                     log.output(logger.LOG_level("INFO"), f"Applied undo")
             if (current_mode == mode_type_normal and event.key == key_save_current_layer_surface):
                 app_state_unsaved_changes = False
-                pygame.image.save(surface_layers[current_selected_surface_layer_index], app_save_filepath_editing_surface)
-                log.output(logger.LOG_level("INFO"), f"Saved current editing surface to {app_save_filepath_editing_surface}")
+                pygame.image.save(surface_layers[current_selected_surface_layer_index], input_layer_filepaths[current_selected_surface_layer_index])
+                log.output(logger.LOG_level("INFO"), f"Saved current editing surface to {input_layer_filepaths[current_selected_surface_layer_index]}")
             if (current_mode == mode_type_normal and event.key == key_fill_bucket):
                 mouse_position = pygame.mouse.get_pos()
                 reverse_camera_mouse_position = camera_reverse_transform(mouse_position)
                 # assumes editing_surface_screen_proportionality_xy != 0
                 # assumes editing_surface_zoom != 0
                 mouse_position_on_editing_surface_position = (int(reverse_camera_mouse_position[0]/(editing_surface_screen_proportionality_xy[0]*editing_surface_zoom)), int(reverse_camera_mouse_position[1]/(editing_surface_screen_proportionality_xy[1]*editing_surface_zoom)))
-                
+
                 previous_color = surface_layers[current_selected_surface_layer_index].get_at(mouse_position_on_editing_surface_position)
                 fill_color = buffer_colors[current_buffer_colors_index]
                 fill_mask = paint_tool_bucket(surface_layers[current_selected_surface_layer_index], pygame.math.Vector2(mouse_position_on_editing_surface_position), fill_color)

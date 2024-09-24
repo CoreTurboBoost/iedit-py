@@ -1,6 +1,7 @@
 #!/bin/env python3
 
 import pygame
+from pygame.math import Vector2 as Vec2
 import sys
 import time
 

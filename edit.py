@@ -86,6 +86,25 @@ class UITextElement:
         self.position = position
         self.margin: Vec2 = Vec2(frame_x_px_margin, frame_y_px_margin)
         self.regenerate_surfaces()
+    def set_top_left_pos(self, position: Vec2) -> None:
+        if not isinstance(position, Vec2): # Try help if position is of incorrect type
+            position = Vec2(position)
+        self.position = position
+    def set_top_right_pos(self, position: Vec2) -> None:
+        self.regenerate_surfaces() # incase there are changes
+        if not isinstance(position, Vec2): # Try help if position is of incorrect type
+            position = Vec2(position)
+        self.position = Vec2(position.x -self.get_width(), position.y)
+    def set_bottom_right_pos(self, position: Vec2) -> None:
+        self.regenerate_surfaces() # incase there are changes
+        if not isinstance(position, Vec2): # Try help if position is of incorrect type
+            position = Vec2(position)
+        self.position = position - self.get_size()
+    def set_bottom_left_pos(self, position: Vec2) -> None:
+        self.regenerate_surface()
+        if not isinstance(position, Vec2): # Try help if position is of incorrect type
+            position = Vec2(position)
+        self.position = Vec2(position.x, position.y -self.get_height())
     def get_width(self) -> int:
         return self.bg_surface.get_width()
     def get_height(self) -> int:

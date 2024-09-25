@@ -100,6 +100,8 @@ class UITextElement:
     def regenerate_surfaces(self) -> None:
         self.text_surface: pygame.Surface = app_font_object.render(self.text, True, app_text_color)
         self.bg_surface: pygame.Surface = pygame.Surface((self.text_surface.get_width()+self.margin.x*2, self.text_surface.get_height()+self.margin.y*2))
+        self.bg_surface.fill(app_text_background_color)
+        self.bg_surface.set_alpha(app_text_background_alpha)
     def update_text(self, new_text: str) -> None:
         self.text = new_text
         self.regenerate_surfaces()

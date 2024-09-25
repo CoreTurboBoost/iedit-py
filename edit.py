@@ -100,7 +100,7 @@ class UITextElement:
         '''
         pass
     def render(self, render_surface: pygame.Surface) -> None:
-        render_surface.blit(self.text_surface, self.position+self.margin
+        render_surface.blit(self.text_surface, self.position+self.margin)
         render_surface.blit(self.bg_surface, self.position)
     def regenerate_surfaces(self) -> None:
         self.text_surface: pygame.Surface = app_font_object.render(self.text, True, app_text_color)

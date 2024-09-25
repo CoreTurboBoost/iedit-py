@@ -81,7 +81,7 @@ app_font_object = pygame.font.Font(None, app_font_size)
 class UITextElement:
     def __init__(self, position: Vec2, text: str, frame_x_px_margin: int, frame_y_px_margin: int):
         self.text: str = ""
-        if not isinstance(positions, Vec2):
+        if not isinstance(position, Vec2):
             position = Vec2(position)
         self.position = position
         self.margin: Vec2 = Vec2(frame_x_px_margin, frame_y_px_margin)

@@ -94,11 +94,6 @@ class UITextElement:
         return Vec2(self.get_width(), self.get_height())
     def get_pos(self) -> Vec2:
         return self.position
-    def handle_event(self, pgevent: pygame.Event) -> bool: 
-        '''
-        Return True, if pgevent was used/handled internally
-        '''
-        pass
     def render(self, render_surface: pygame.Surface) -> None:
         render_surface.blit(self.text_surface, self.position+self.margin)
         render_surface.blit(self.bg_surface, self.position)

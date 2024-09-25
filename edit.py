@@ -95,8 +95,8 @@ class UITextElement:
     def get_pos(self) -> Vec2:
         return self.position
     def render(self, render_surface: pygame.Surface) -> None:
-        render_surface.blit(self.text_surface, self.position+self.margin)
         render_surface.blit(self.bg_surface, self.position)
+        render_surface.blit(self.text_surface, self.position+self.margin)
     def regenerate_surfaces(self) -> None:
         self.text_surface: pygame.Surface = app_font_object.render(self.text, True, app_text_color)
         self.bg_surface: pygame.Surface = pygame.Surface((self.text_surface.get_width()+self.margin.x*2, self.text_surface.get_height()+self.margin.y*2))

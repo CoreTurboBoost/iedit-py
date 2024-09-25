@@ -361,6 +361,8 @@ def camera_reverse_transform(vec2f_position):
     return (vec2f_position[0] + State.camera_position[0] - screen_size[0]/2, vec2f_position[1] + State.camera_position[1] - screen_size[1]/2)
 error_string = ""
 
+ui_display_surface_size = UITextElement(Vec2(5, 5), f"SIZE NOT UPDATED", 5, 5)
+
 previous_frame_time = time.time()
 clock = pygame.time.Clock()
 while True:
@@ -937,12 +939,8 @@ while True:
     screen.blit(display_layer_index_text, (screen_size[0] -display_layer_index_background.get_width(), display_color_rect_screen_verticle_gap +display_color_rect_size[1] +10 +5 + display_color_rect_text_background_surface.get_height()))
 
     if (Mode.current == Mode.RESIZE_SURFACE):
-        editing_surface_size_text_surface = app_font_object.render(f"{surface_layers[State.current_selected_surface_layer_index].get_width()}w {surface_layers[State.current_selected_surface_layer_index].get_height()}h", True, (app_text_color))
-        editing_surface_size_text_background_surface = pygame.Surface((editing_surface_size_text_surface.get_width(), editing_surface_size_text_surface.get_height()))
-        editing_surface_size_text_background_surface.fill(app_text_background_color)
-        editing_surface_size_text_background_surface.set_alpha(app_text_background_alpha)
-        screen.blit(editing_surface_size_text_background_surface, (5, 5))
-        screen.blit(editing_surface_size_text_surface, (5, 5))
+        ui_display_surface_size.update(f"{surface_layers[State.current_selected_surface_layer_index].get_width()}w {surface_layers[State.current_selected_surface_layer_index].get_height()}h") # TODO: Update only when the surface is resized. Not every frame.
+        ui_display_surface_size.render(screen)
 
     # display errors above input buffer
 

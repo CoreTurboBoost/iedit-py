@@ -377,6 +377,8 @@ def camera_reverse_transform(vec2f_position):
     return (vec2f_position[0] + State.camera_position[0] - screen_size[0]/2, vec2f_position[1] + State.camera_position[1] - screen_size[1]/2)
 error_string = ""
 
+ui_display_layer_index = UITextElement(Vec2(0, 0), f"INDEX NOT SET", 1, 1)
+ui_display_layer_index.set_top_right_pos(Vec2(10, 0))
 ui_display_surface_size = UITextElement(Vec2(5, 5), f"SIZE NOT UPDATED", 5, 5)
 
 previous_frame_time = time.time()
@@ -947,12 +949,9 @@ while True:
     screen.blit(display_input_buffer_background_surface, (screen_size[0] - display_input_buffer_surface.get_width() - 5, screen_size[1] - display_input_buffer_surface.get_height() -5))
     screen.blit(display_input_buffer_surface, (screen_size[0] - display_input_buffer_surface.get_width() - 5, screen_size[1] - display_input_buffer_surface.get_height() -5))
 
-    display_layer_index_text = app_font_object.render(f"{State.current_selected_surface_layer_index}/{len(surface_layers)}", True, (app_text_color))
-    display_layer_index_background = pygame.Surface((display_layer_index_text.get_width()+10, display_layer_index_text.get_height()+10))
-    display_layer_index_background.fill(app_text_background_color)
-    display_layer_index_background.set_alpha(app_text_background_alpha)
-    screen.blit(display_layer_index_background, (screen_size[0] -display_layer_index_background.get_width() -5, display_color_rect_screen_verticle_gap +display_color_rect_size[1] +10 + display_color_rect_text_background_surface.get_height()))
-    screen.blit(display_layer_index_text, (screen_size[0] -display_layer_index_background.get_width(), display_color_rect_screen_verticle_gap +display_color_rect_size[1] +10 +5 + display_color_rect_text_background_surface.get_height()))
+    ui_display_layer_index.update_text(f"{State.current_selected_surface_layer_index}/{len(surface_layers)}")
+    ui_display_layer_index.set_top_right_pos((screen_size[0]-5, display_color_rect_screen_verticle_gap +display_color_rect_size[1] +10 + display_color_rect_text_background_surface.get_height()))
+    ui_display_layer_index.render(screen)
 
     if (Mode.current == Mode.RESIZE_SURFACE):
         ui_display_surface_size.update_text(f"{surface_layers[State.current_selected_surface_layer_index].get_width()}w {surface_layers[State.current_selected_surface_layer_index].get_height()}h") # TODO: Update only when the surface is resized. Not every frame.

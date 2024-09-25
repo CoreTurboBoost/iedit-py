@@ -114,9 +114,6 @@ per_layer_undo_objects = [[]] * len(input_layer_filepaths)
 argv = sys.argv
 argc = len(argv)
 
-if (argc == 1):
-    print(f"python3 {argv[0]} --help")
-
 if (argc > 1):
     if (argv[1] == "--help" or argv[1] == "-h"):
         print( "Description: Pixel art editor with key bindings")

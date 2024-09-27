@@ -874,8 +874,10 @@ while True:
             mouse_pos[0] = 0
         if (abs(mouse_pos[1]) < 5):
             mouse_pos[1] = 0
-        mouse_pos[0] *= 0.06
-        mouse_pos[1] *= 0.06
+        # increase the speed and frame-rate independant
+        mouse_pos[0] *= 2 * delta_time_seconds
+        mouse_pos[1] *= 2 * delta_time_seconds
+        # Update camera position
         State.camera_position[0] += int(mouse_pos[0])
         State.camera_position[1] += int(mouse_pos[1])
 

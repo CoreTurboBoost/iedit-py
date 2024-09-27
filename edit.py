@@ -379,7 +379,17 @@ def camera_reverse_transform(vec2f_position):
     return (vec2f_position[0] + State.camera_position[0] - screen_size[0]/2, vec2f_position[1] + State.camera_position[1] - screen_size[1]/2)
 error_string = ""
 
+def position_rel_to_surface(surface: pygame.Surface) -> Vec2:
+    pass
+def mouse_pos_on_cur_image_layer() -> Vec2:
+    reverse_camera_mouse_position = camera_reverse_transform(State.last_mouse_position)
+    assume_or_exception(not (editing_surface_screen_proportionality_xy[0] == 0 and editing_surface_screen_proportionality_xy[1] == 0))
+    assume_or_exception(State.editing_surface_zoom != 0)
+    mouse_position_on_editing_surface_position = (int(reverse_camera_mouse_position[0]/(editing_surface_screen_proportionality_xy[0]*State.editing_surface_zoom)), int(reverse_camera_mouse_position[1]/(editing_surface_screen_proportionality_xy[1]*State.editing_surface_zoom)))
+    return mouse_position_on_editing_surface_position
+
 ui_display_layer_index = UITextElement(Vec2(0, 0), f"INDEX NOT SET", 1, 1)
+
 ui_display_layer_index.set_top_right_pos(Vec2(10, 0))
 ui_display_surface_size = UITextElement(Vec2(5, 5), f"SIZE NOT UPDATED", 5, 5)
 

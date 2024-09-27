@@ -363,9 +363,9 @@ display_color_rect_screen_verticle_gap = 10 # pixels
 
 app_text_background_alpha = 150
 
-screen_size = (640, 480)
+screen_size = Vec2(640, 480)
 screen = pygame.display.set_mode(screen_size, pygame.RESIZABLE)
-editing_surface_screen_proportionality_xy = (screen_size[0]/640, screen_size[1]/480)
+editing_surface_screen_proportionality_xy = Vec2((screen_size[0]/640, screen_size[1]/480))
 
 bg_color = (100, 100, 100)
 app_text_color = (0, 0, 0)

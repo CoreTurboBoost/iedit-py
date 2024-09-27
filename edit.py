@@ -128,8 +128,6 @@ class UITextElement:
 input_layer_filepaths = []
 surface_layers = []
 
-per_layer_undo_objects = [[]] * len(input_layer_filepaths)
-
 argv = sys.argv
 argc = len(argv)
 
@@ -220,6 +218,9 @@ if (len(input_layer_filepaths) == 0):
     print("No input image files given. Loading a default surface. Setting output file to 'a.png'.")
     surface_layers.append(pygame.Surface((32, 32), pygame.SRCALPHA))
     input_layer_filepaths.append("a.png")
+
+per_layer_undo_objects = [[]] * len(input_layer_filepaths)
+log.output(logger.LOG_level("INFO"), f"per_layer_undo_objects: {per_layer_undo_objects}")
 
 def get_mode_type_code_to_str(mode_type_code):
     if (mode_type_code == Mode.NORMAL):
@@ -347,6 +348,7 @@ class UndoResize(UndoObject):
 
 def add_undo_to_cur_layer(undo_object: UndoObject):
     global per_layer_undo_objects
+    log.output(logger.LOG_level("INFO"), f"per_layer_undo_objects: {per_layer_undo_objects}, cur_sel_surf_layer_ind: {State.current_selected_surface_layer_index}")
     per_layer_undo_objects[State.current_selected_surface_layer_index].append(undo_object)
     if (len(per_layer_undo_objects[State.current_selected_surface_layer_index]) > State.max_undo_objects):
         per_layer_undo_objects[State.current_selected_surface_layer_index].pop(0)

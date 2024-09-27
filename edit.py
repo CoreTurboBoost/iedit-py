@@ -147,7 +147,7 @@ if (argc > 1):
         sys.exit()
 
 def assume_or_exception(condition: bool) -> None:
-    if (condition):
+    if (not condition):
         Exception(f"condition failed")
 
 arg_skip_count = 0

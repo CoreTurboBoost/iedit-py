@@ -474,10 +474,7 @@ while True:
                 pygame.image.save(surface_layers[State.current_selected_surface_layer_index], input_layer_filepaths[State.current_selected_surface_layer_index])
                 log.output(logger.LOG_level("INFO"), f"Saved current editing surface to {input_layer_filepaths[State.current_selected_surface_layer_index]}")
             if (Mode.current == Mode.NORMAL and event.key == Key.fill_bucket):
-                reverse_camera_mouse_position = camera_reverse_transform(State.last_mouse_position)
-                # assumes editing_surface_screen_proportionality_xy != 0
-                # assumes State.editing_surface_zoom != 0
-                mouse_position_on_editing_surface_position = (int(reverse_camera_mouse_position[0]/(editing_surface_screen_proportionality_xy[0]*State.editing_surface_zoom)), int(reverse_camera_mouse_position[1]/(editing_surface_screen_proportionality_xy[1]*State.editing_surface_zoom)))
+                mouse_position_on_editing_surface_position = mouse_pos_on_cur_image_layer()
 
                 previous_color = surface_layers[State.current_selected_surface_layer_index].get_at(mouse_position_on_editing_surface_position)
                 fill_color = buffer_colors[current_buffer_colors_index]
@@ -892,10 +889,7 @@ while True:
         State.camera_position[1] += int(mouse_pos[1])
 
     if (Mode.current == Mode.NORMAL and State.main_mouse_button_held):
-        reverse_camera_mouse_position = camera_reverse_transform(State.last_mouse_position)
-        # assumes editing_surface_screen_proportionality_xy != 0
-        # assumes State.editing_surface_zoom != 0
-        mouse_position_on_editing_surface_position = (int(reverse_camera_mouse_position[0]/(editing_surface_screen_proportionality_xy[0]*State.editing_surface_zoom)), int(reverse_camera_mouse_position[1]/(editing_surface_screen_proportionality_xy[1]*State.editing_surface_zoom)))
+        mouse_position_on_editing_surface_position = mouse_pos_on_cur_image_layer()
         if (mouse_position_on_editing_surface_position[0] < 0 or mouse_position_on_editing_surface_position[1] < 0):
             log.output(logger.LOG_level("ERROR"), f"surface position is negative: {mouse_position_on_editing_surface_position}", write_file_path = "errors.txt")
             log.output(logger.LOG_level("INFO"), f"Data: mouse_pos:{State.last_mouse_position}, screen_size:{screen_size}, camera_pos:{State.camera_position}, revers_cam_pos:{reverse_camera_mouse_position}, proprotionality_xy:{editing_surface_screen_proportionality_xy}, zoom:{State.editing_surface_zoom}", write_file_path = "errors.txt")

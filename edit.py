@@ -418,6 +418,9 @@ while True:
             average = (width+height)/2
             app_font_size = int(20 * average)
             app_font_object = pygame.font.Font(None, app_font_size)
+            # update ui elements on window resize.
+            ui_display_surface_size.regenerate_surfaces()
+            ui_display_layer_index.regenerate_surfaces()
 
         if (event.type == pygame.MOUSEWHEEL):
             if (State.min_editing_surface_zoom < State.editing_surface_zoom + event.y < State.max_editing_surface_zoom):

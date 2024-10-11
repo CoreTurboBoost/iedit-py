@@ -622,6 +622,7 @@ while True:
                         if (char.isdigit()):
                             number_str += char
                     surface_layers[State.current_selected_surface_layer_index] = pygame.transform.scale(surface_layers[State.current_selected_surface_layer_index], (width, height))
+                    ui_display_surface_size.update_text(f"{surface_layers[State.current_selected_surface_layer_index].get_width()}w {surface_layers[State.current_selected_surface_layer_index].get_height()}h")
                     State.unsaved_changes = True
                     log.output(logger.LOG_level("INFO"), f"Changed editing surface size to ({surface_layers[State.current_selected_surface_layer_index].get_width()}, {surface_layers[State.current_selected_surface_layer_index].get_height()})")
 
@@ -960,12 +961,11 @@ while True:
     screen.blit(display_input_buffer_background_surface, (screen_size[0] - display_input_buffer_surface.get_width() - 5, screen_size[1] - display_input_buffer_surface.get_height() -5))
     screen.blit(display_input_buffer_surface, (screen_size[0] - display_input_buffer_surface.get_width() - 5, screen_size[1] - display_input_buffer_surface.get_height() -5))
 
-    ui_display_layer_index.update_text(f"{State.current_selected_surface_layer_index}/{len(surface_layers)}")
-    ui_display_layer_index.set_top_right_pos((screen_size[0]-5, display_color_rect_screen_verticle_gap +display_color_rect_size[1] +10 + display_color_rect_text_background_surface.get_height()))
+    ui_display_layer_index.update_text(f"{State.current_selected_surface_layer_index}/{len(surface_layers)}") # TODO: update when the current layer get switched.
+    ui_display_layer_index.set_top_right_pos((screen_size[0]-5, display_color_rect_screen_verticle_gap +display_color_rect_size[1] +10 + display_color_rect_text_background_surface.get_height())) # TODO: update only when the window is resized.
     ui_display_layer_index.render(screen)
 
     if (Mode.current == Mode.RESIZE_SURFACE):
-        ui_display_surface_size.update_text(f"{surface_layers[State.current_selected_surface_layer_index].get_width()}w {surface_layers[State.current_selected_surface_layer_index].get_height()}h") # TODO: Update only when the surface is resized. Not every frame.
         ui_display_surface_size.render(screen)
 
     # display errors above input buffer

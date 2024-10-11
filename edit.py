@@ -101,7 +101,7 @@ class UITextElement:
             position = Vec2(position)
         self.position = position - self.get_size()
     def set_bottom_left_pos(self, position: Vec2) -> None:
-        self.regenerate_surface()
+        self.regenerate_surfaces()
         if not isinstance(position, Vec2): # Try help if position is of incorrect type
             position = Vec2(position)
         self.position = Vec2(position.x, position.y -self.get_height())

@@ -388,10 +388,10 @@ def mouse_pos_on_cur_image_layer() -> Vec2:
     mouse_position_on_editing_surface_position = (int(reverse_camera_mouse_position[0]/(editing_surface_screen_proportionality_xy[0]*State.editing_surface_zoom)), int(reverse_camera_mouse_position[1]/(editing_surface_screen_proportionality_xy[1]*State.editing_surface_zoom)))
     return mouse_position_on_editing_surface_position
 
-ui_display_layer_index = UITextElement(Vec2(0, 0), f"INDEX NOT SET", 1, 1)
-
+ui_display_layer_index = UITextElement(Vec2(0, 0), f"{State.current_selected_surface_layer_index}/{len(surface_layers)}", 1, 1)
 ui_display_layer_index.set_top_right_pos(Vec2(10, 0))
-ui_display_surface_size = UITextElement(Vec2(5, 5), f"SIZE NOT UPDATED", 5, 5)
+ui_display_surface_size = UITextElement(Vec2(5, 5), f"{surface_layers[State.current_selected_surface_layer_index].get_width()}w {surface_layers[State.current_selected_surface_layer_index].get_height()}h", 5, 5)
+
 
 previous_frame_time = time.time()
 clock = pygame.time.Clock()

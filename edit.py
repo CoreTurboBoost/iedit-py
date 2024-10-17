@@ -32,6 +32,7 @@ class Key:
     confirm = pygame.K_RETURN
     move_camera = pygame.K_m
     fill_bucket = pygame.K_f
+    toggle_grid_lines = pygame.K_g
     quit = pygame.K_q
             
 class State:
@@ -46,6 +47,7 @@ class State:
     editing_surface_zoom = 30
     max_editing_surface_zoom = 100
     min_editing_surface_zoom = 0
+    display_grid_lines = True
 
 class Mode:
     NORMAL = 0
@@ -174,6 +176,7 @@ for arg_index in range(1, argc):
         print(" - pick current hovered color (In normal mode): ", pygame.key.name(Key.pick_color))
         print(" - confirm (In any mode, used for prompts): ", pygame.key.name(Key.confirm))
         print(" - fill bucket paint brush (In normal mode): " , pygame.key.name(Key.fill_bucket))
+        print(" - toggle grid lines (In normal mode): ", pygame.key.name(Key.toggle_grid_lines))
         print(" - quit program without saving (or save warning) (In normal mode): ", pygame.key.name(Key.quit))
         sys.exit()
     elif (arg[:2] == "--" and not cli_only_files_remain):
@@ -438,6 +441,8 @@ while True:
 
         if (event.type == pygame.KEYDOWN):
 
+            if (Mode.current == Mode.NORMAL and event.key == Key.toggle_grid_lines):
+                State.display_grid_lines = not State.display_grid_lines
             if (Mode.current != Mode.NORMAL and event.key == Key.return_normal_mode):
                 log.output(logger.LOG_level("INFO"), f"Escaped to normal mode from {get_mode_type_code_to_str(Mode.current)}")
                 Mode.current = Mode.NORMAL
@@ -924,10 +929,11 @@ while True:
         editing_surface_negated_color[1] += 32
         editing_surface_negated_color[2] += 32
     screen.blit(transformed_editing_surface, camera_transform((0, 0)))
-    for x in range(surface_layers[State.current_selected_surface_layer_index].get_width()+1):
-        pygame.draw.line(screen, editing_surface_negated_color, camera_transform((x*editing_surface_screen_proportionality_xy[0]*State.editing_surface_zoom, 0)), camera_transform((x*editing_surface_screen_proportionality_xy[0]*State.editing_surface_zoom, transformed_editing_surface.get_height())))
-    for y in range(surface_layers[State.current_selected_surface_layer_index].get_height()+1):
-        pygame.draw.line(screen, editing_surface_negated_color, camera_transform((0, y*editing_surface_screen_proportionality_xy[1]*State.editing_surface_zoom)), camera_transform((transformed_editing_surface.get_width(), y*editing_surface_screen_proportionality_xy[1]*State.editing_surface_zoom)))
+    if State.display_grid_lines:
+        for x in range(surface_layers[State.current_selected_surface_layer_index].get_width()+1):
+            pygame.draw.line(screen, editing_surface_negated_color, camera_transform((x*editing_surface_screen_proportionality_xy[0]*State.editing_surface_zoom, 0)), camera_transform((x*editing_surface_screen_proportionality_xy[0]*State.editing_surface_zoom, transformed_editing_surface.get_height())))
+        for y in range(surface_layers[State.current_selected_surface_layer_index].get_height()+1):
+            pygame.draw.line(screen, editing_surface_negated_color, camera_transform((0, y*editing_surface_screen_proportionality_xy[1]*State.editing_surface_zoom)), camera_transform((transformed_editing_surface.get_width(), y*editing_surface_screen_proportionality_xy[1]*State.editing_surface_zoom)))
     
     display_color_rect_size = (screen_size[0]//25, screen_size[1]//25)
     display_color_rect_start_x_position = screen_size[0] - (display_color_rect_size[0]+display_color_rect_horizontal_gap)*10 - display_color_rect_horizontal_gap

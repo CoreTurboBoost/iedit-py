@@ -899,13 +899,7 @@ while True:
 
     if (Mode.current == Mode.NORMAL and State.main_mouse_button_held):
         mouse_position_on_editing_surface_position = mouse_pos_on_cur_image_layer()
-        if (mouse_position_on_editing_surface_position[0] < 0 or mouse_position_on_editing_surface_position[1] < 0):
-            log.output(logger.LOG_level("ERROR"), f"surface position is negative: {mouse_position_on_editing_surface_position}", write_file_path = "errors.txt")
-            log.output(logger.LOG_level("INFO"), f"Data: mouse_pos:{State.last_mouse_position}, screen_size:{screen_size}, camera_pos:{State.camera_position}, revers_cam_pos:{reverse_camera_mouse_position}, proprotionality_xy:{editing_surface_screen_proportionality_xy}, zoom:{State.editing_surface_zoom}", write_file_path = "errors.txt")
-        elif (mouse_position_on_editing_surface_position[0] >= surface_layers[State.current_selected_surface_layer_index].get_width() or mouse_position_on_editing_surface_position[1] >= surface_layers[State.current_selected_surface_layer_index].get_height()):
-            log.output(logger.LOG_level("ERROR"), f"surface position is greater or equal surface size: {mouse_position_on_editing_surface_position}", write_file_path = "errors.txt")
-            log.output(logger.LOG_level("INFO"), f"Data: mouse_pos:{State.last_mouse_position}, screen_size:{screen_size}, camera_pos:{State.camera_position}, revers_cam_pos:{reverse_camera_mouse_position}, proprotionality_xy:{editing_surface_screen_proportionality_xy}, zoom:{State.editing_surface_zoom}", write_file_path = "errors.txt")
-        elif (buffer_colors[current_buffer_colors_index] != surface_layers[State.current_selected_surface_layer_index].get_at(mouse_position_on_editing_surface_position)):
+        if (buffer_colors[current_buffer_colors_index] != surface_layers[State.current_selected_surface_layer_index].get_at(mouse_position_on_editing_surface_position)):
             color_copy = pygame.Color(surface_layers[State.current_selected_surface_layer_index].get_at(mouse_position_on_editing_surface_position))
             undo_object = UndoSinglePixel(mouse_position_on_editing_surface_position, color_copy)
             add_undo_to_cur_layer(undo_object)

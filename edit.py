@@ -899,7 +899,13 @@ while True:
 
     if (Mode.current == Mode.NORMAL and State.main_mouse_button_held):
         mouse_position_on_editing_surface_position = mouse_pos_on_cur_image_layer()
-        if (buffer_colors[current_buffer_colors_index] != surface_layers[State.current_selected_surface_layer_index].get_at(mouse_position_on_editing_surface_position)):
+        if (mouse_position_on_editing_surface_position[0] < 0 or mouse_position_on_editing_surface_position[1] < 0):
+            pass
+        elif (mouse_position_on_editing_surface_position[0] >= surface_layers[State.current_selected_surface_layer_index].get_width()):
+            pass
+        elif (mouse_position_on_editing_surface_position[1] >= surface_layers[State.current_selected_surface_layer_index].get_height()):
+            pass
+        elif (buffer_colors[current_buffer_colors_index] != surface_layers[State.current_selected_surface_layer_index].get_at(mouse_position_on_editing_surface_position)):
             color_copy = pygame.Color(surface_layers[State.current_selected_surface_layer_index].get_at(mouse_position_on_editing_surface_position))
             undo_object = UndoSinglePixel(mouse_position_on_editing_surface_position, color_copy)
             add_undo_to_cur_layer(undo_object)

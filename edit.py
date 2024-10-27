@@ -170,7 +170,7 @@ for arg_index in range(1, argc):
         print(" - select color (In normal mode): ", pygame.key.name(Key.select_mode_select_color))
         print(" - set color (In normal mode): ", pygame.key.name(Key.select_mode_set_color))
         print(" - resize editing surface (In normal mode): ", pygame.key.name(Key.resize_editing_surface))
-        print(" - layers managment (In normal mode): ", pygame.key.name(Key.layer_mode_toggle))
+        print(" - layers management (In normal mode): ", pygame.key.name(Key.layer_mode_toggle))
         print(" - undo editing surface modification (In normal mode): ", pygame.key.name(Key._undo_editing_surface_modification))
         print(" - save current layer (In normal mode): ", pygame.key.name(Key.save_current_layer_surface))
         print(" - pick current hovered color (In normal mode): ", pygame.key.name(Key.pick_color))

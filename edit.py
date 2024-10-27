@@ -48,6 +48,14 @@ class State:
     max_editing_surface_zoom = 100
     min_editing_surface_zoom = 0
     display_grid_lines = True
+    text_input_buffer = ""
+    max_text_buffer_char_count = 64
+
+def append_str_to_text_buffer(string: str) -> None:
+    append_char_count = State.max_text_buffer_char_count - len(State.text_input_buffer)
+    if append_char_count <= 0:
+        return None
+    State.text_input_buffer = State.text_input_buffer + string[:append_char_count]
 
 class Mode:
     NORMAL = 0

@@ -56,6 +56,8 @@ def append_str_to_text_buffer(string: str) -> None:
     if append_char_count <= 0:
         return None
     State.text_input_buffer = State.text_input_buffer + string[:append_char_count]
+def clear_text_buffer() -> None:
+    State.text_input_buffer = ""
 
 class Mode:
     NORMAL = 0

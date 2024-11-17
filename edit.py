@@ -661,6 +661,9 @@ while True:
                     clear_text_buffer()
                     Mode.current = Mode.NORMAL
                     log.output(logger.LOG_level("INFO"), f"Changed mode to normal from resize surface")
+                if (Mode.current == Mode.LAYERS):
+                    clear_text_buffer()
+                    Mode.current = Mode.NORMAL
 
             if (Mode.current == Mode.SET_COLOR and (event.unicode.isdigit() or (event.unicode in ["r", "g", "b", "a"]))):
                 last_number_in_input = ""

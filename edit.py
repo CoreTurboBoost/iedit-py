@@ -520,7 +520,6 @@ while True:
                 if (Mode.current == Mode.SELECT_COLOR):
                     Mode.current = Mode.NORMAL
                     log.output(logger.LOG_level("INFO"), f"Entered mode {get_mode_type_code_to_str(Mode.current)}")
-                    clear_text_buffer()
                 if (Mode.current == Mode.SET_COLOR):
                     Mode.current = Mode.NORMAL
                     log.output(logger.LOG_level("INFO"), f"Entered mode {get_mode_type_code_to_str(Mode.current)}")
@@ -610,8 +609,6 @@ while True:
                         if (current_color_channel == "a"):
                             if (int(current_number_str) < 256):
                                 final_color.a = int(current_number_str)
-                    clear_text_buffer()
-                clear_text_buffer() # Clear input text buffer, when confirm key is pressed
 
                 if (Mode.current == Mode.RESIZE_SURFACE):
                     Mode.current = Mode.NORMAL

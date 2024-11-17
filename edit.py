@@ -466,6 +466,10 @@ while True:
                 Mode.current = Mode.RESIZE_SURFACE
                 log.output(logger.LOG_level("INFO"), f"Entered mode {get_mode_type_code_to_str(Mode.current)}")
                 clear_text_buffer()
+            if (Mode.current == Mode.NORMAL and event.key == Key.layer_mode_toggle):
+                log.output(logger.LOG_level("INFO"), "Entered layer mode")
+                Mode.current = Mode.LAYERS
+                clear_text_buffer()
             if (Mode.current == Mode.NORMAL and event.key == Key.move_camera):
                 State.move_camera = True
             if (Mode.current == Mode.NORMAL and event.key == Key.undo_editing_surface_modification):
@@ -511,10 +515,6 @@ while True:
                     continue
                 log.output(logger.LOG_level("INFO"), f"adding color {hover_color} to pallet buffer slot {current_buffer_colors_index}")
                 buffer_colors[current_buffer_colors_index] = hover_color
-            if (Mode.current == Mode.NORMAL and event.key == Key.layer_mode_toggle):
-                log.output(logger.LOG_level("INFO"), "Entered layer mode")
-                Mode.current = Mode.LAYERS
-                # Edit each layers' surface blend mode here.
 
             if (event.key == Key.confirm):
                 if (Mode.current == Mode.SELECT_COLOR):

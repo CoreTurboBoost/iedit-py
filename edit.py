@@ -422,7 +422,10 @@ while True:
     for event in pygame.event.get():
         if (event.type == pygame.QUIT or Mode.current == Mode.NORMAL and event.type == pygame.KEYDOWN and event.key == Key.quit):
             if (State.unsaved_changes):
-                print("There are unsaved changes")
+                append_str_to_text_buffer("Warning: Unsaved changes, quit to ignore")
+                State.clear_text_buffer_on_write = True
+                State.unsaved_changes = False # TODO: Make a more permenant solution, with a timer
+                continue
             pygame.quit()
             sys.exit()
 

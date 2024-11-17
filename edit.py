@@ -52,6 +52,8 @@ class State:
     max_text_buffer_char_count = 64
     clear_text_buffer_on_write = False # clear text buffer on next write
 
+def write_str_to_text_buffer(string: str) -> None:
+    State.text_io_buffer = string[:State.max_text_buffer_char_count]
 def append_str_to_text_buffer(string: str) -> None:
     if State.clear_text_buffer_on_write:
         State.text_io_buffer = ""
@@ -422,7 +424,7 @@ while True:
     for event in pygame.event.get():
         if (event.type == pygame.QUIT or Mode.current == Mode.NORMAL and event.type == pygame.KEYDOWN and event.key == Key.quit):
             if (State.unsaved_changes):
-                append_str_to_text_buffer("Warning: Unsaved changes, quit to ignore")
+                write_str_to_text_buffer("Warning: Unsaved changes, quit to ignore")
                 State.clear_text_buffer_on_write = True
                 State.unsaved_changes = False # TODO: Make a more permenant solution, with a timer
                 continue
@@ -651,12 +653,12 @@ while True:
                     layer_index = int(State.text_io_buffer)
                     if (layer_index < 0):
                         clear_text_buffer()
-                        append_str_to_text_buffer("Error: layer index cannot be negative")
+                        write_str_to_text_buffer("Error: layer index cannot be negative")
                         State.clear_text_buffer_on_write = True
                         continue # Catch invalid case of negative inputs
                     if (layer_index >= len(surface_layers)):
                         clear_text_buffer()
-                        append_str_to_text_buffer("Error: layer index out of bound")
+                        write_str_to_text_buffer("Error: layer index out of bound")
                         State.clear_text_buffer_on_write = True
                         continue # Error selected surface index is not valid/out of range
                     State.current_selected_surface_layer_index = layer_index

@@ -328,9 +328,6 @@ def paint_tool_bucket(surface: pygame.Surface, start_point: pygame.math.Vector2,
     log.output(logger.LOG_level("INFO"), "paint bucket has finished drawing")
     return fill_mask
 
-current_input_buffer = ""
-max_input_buffer_len = 16
-
 buffer_colors = []
 current_buffer_colors_index = 0
 
@@ -456,19 +453,19 @@ while True:
             if (Mode.current != Mode.NORMAL and event.key == Key.return_normal_mode):
                 log.output(logger.LOG_level("INFO"), f"Escaped to normal mode from {get_mode_type_code_to_str(Mode.current)}")
                 Mode.current = Mode.NORMAL
-                current_input_buffer = ""
+                clear_text_buffer()
             if (Mode.current == Mode.NORMAL and event.key == Key.select_mode_select_color):
                 Mode.current = Mode.SELECT_COLOR
                 log.output(logger.LOG_level("INFO"), f"Entered mode {get_mode_type_code_to_str(Mode.current)}")
-                current_input_buffer = ""
+                clear_text_buffer()
             if (Mode.current == Mode.NORMAL and event.key == Key.select_mode_set_color):
                 Mode.current = Mode.SET_COLOR
                 log.output(logger.LOG_level("INFO"), f"Entered mode {get_mode_type_code_to_str(Mode.current)}")
-                current_input_buffer = ""
+                clear_text_buffer()
             if (Mode.current == Mode.NORMAL and event.key == Key.resize_editing_surface):
                 Mode.current = Mode.RESIZE_SURFACE
                 log.output(logger.LOG_level("INFO"), f"Entered mode {get_mode_type_code_to_str(Mode.current)}")
-                current_input_buffer = ""
+                clear_text_buffer()
             if (Mode.current == Mode.NORMAL and event.key == Key.move_camera):
                 State.move_camera = True
             if (Mode.current == Mode.NORMAL and event.key == Key.undo_editing_surface_modification):
@@ -523,13 +520,14 @@ while True:
                 if (Mode.current == Mode.SELECT_COLOR):
                     Mode.current = Mode.NORMAL
                     log.output(logger.LOG_level("INFO"), f"Entered mode {get_mode_type_code_to_str(Mode.current)}")
+                    clear_text_buffer()
                 if (Mode.current == Mode.SET_COLOR):
                     Mode.current = Mode.NORMAL
                     log.output(logger.LOG_level("INFO"), f"Entered mode {get_mode_type_code_to_str(Mode.current)}")
                     current_color_channel = None
                     final_color = buffer_colors[current_buffer_colors_index]
                     current_number_str = ""
-                    for char in current_input_buffer:
+                    for char in State.text_input_buffer:
                         if (char == "r"):
                             if (len(current_number_str) > 0):
                                 if (char == "r"):
@@ -612,6 +610,8 @@ while True:
                         if (current_color_channel == "a"):
                             if (int(current_number_str) < 256):
                                 final_color.a = int(current_number_str)
+                    clear_text_buffer()
+                clear_text_buffer() # Clear input text buffer, when confirm key is pressed
 
                 if (Mode.current == Mode.RESIZE_SURFACE):
                     Mode.current = Mode.NORMAL
@@ -622,7 +622,7 @@ while True:
                     width = surface_layers[State.current_selected_surface_layer_index].get_width()
                     height = surface_layers[State.current_selected_surface_layer_index].get_height()
                     number_str = ""
-                    for char in current_input_buffer:
+                    for char in State.text_input_buffer:
 
                         if (char == "w"):
                             if (len(number_str) > 0):
@@ -661,23 +661,22 @@ while True:
                     log.output(logger.LOG_level("INFO"), f"Changed mode to normal from resize surface")
 
             if (Mode.current == Mode.SET_COLOR and (event.unicode.isdigit() or (event.unicode in ["r", "g", "b", "a"]))):
-                append_str_to_text_buffer(event.unicode)
                 last_number_in_input = ""
-                #print(f"{current_input_buffer}, reverse:{current_input_buffer[::-1]}")
+                #print(f"{State.text_input_buffer}, reverse:{State.text_input_buffer[::-1]}")
                 # code to stop numbers being larger than 255
-                for char in current_input_buffer[::-1]:
+                for char in State.text_input_buffer[::-1]:
                     #print(f"char={char}")
                     if not char.isdigit():
                         #print(f"break at {char}")
                         break
                     last_number_in_input += char
-                if len(last_number_in_input) > 0:
+                if len(last_number_in_input) > 0 and event.unicode.isdigit():
                     last_number_in_input = last_number_in_input[::-1]
                     print(last_number_in_input)
                     val = int(last_number_in_input+event.unicode)
                     if val >= 255:
                         continue
-                current_input_buffer += event.unicode
+                State.text_input_buffer += event.unicode
             if (Mode.current == Mode.SELECT_COLOR and event.unicode.isdigit()):
                 index = int(event.unicode)
                 if (index >= 0 and index <= 9):
@@ -774,7 +773,7 @@ while True:
     screen.blit(display_mode_text_background_surface, (screen_size[0]//8, screen_size[1] - display_mode_text_surface.get_height() -5))
     screen.blit(display_mode_text_surface, (screen_size[0]//8, screen_size[1] - display_mode_text_surface.get_height() -5))
 
-    display_input_buffer_surface = app_font_object.render(f"{current_input_buffer}", True, (app_text_color))
+    display_input_buffer_surface = app_font_object.render(f"{State.text_input_buffer}", True, (app_text_color))
 
     display_input_buffer_background_surface = pygame.Surface((display_input_buffer_surface.get_width(), display_input_buffer_surface.get_height()))
     display_input_buffer_background_surface.fill(app_text_background_color)

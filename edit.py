@@ -640,253 +640,58 @@ while True:
                     ui_display_surface_size.update_text(f"{surface_layers[State.current_selected_surface_layer_index].get_width()}w {surface_layers[State.current_selected_surface_layer_index].get_height()}h")
                     State.unsaved_changes = True
                     log.output(logger.LOG_level("INFO"), f"Changed editing surface size to ({surface_layers[State.current_selected_surface_layer_index].get_width()}, {surface_layers[State.current_selected_surface_layer_index].get_height()})")
-
-            if (event.key == pygame.K_0 or event.key == pygame.K_KP0):
-                if (Mode.current == Mode.SELECT_COLOR):
-                    current_buffer_colors_index = 9
+                if (Mode.current == Mode.LAYERS):
+                    layer_index = int(State.text_input_buffer) # Should not fail (if it does, error in sanitization, buf-not-cleared before menu switch, allowing other characters into buffer when in layers mode
+                    if (layer_index < 0):
+                        continue # Error, but how, user should not be able to enter '-' into the text input
+                    if (layer_index >= len(surface_layers)):
+                        continue # Error selected surface index is not valid/out of range
+                    State.current_selected_surface_layer_index = layer_index
                     Mode.current = Mode.NORMAL
-                    log.output(logger.LOG_level("INFO"), f"Entered {get_mode_type_code_to_str(Mode.current)}")
-                if (Mode.current == Mode.SET_COLOR):
-                    if (len(current_input_buffer) >= 2):
-                        if (current_input_buffer[-1].isdigit() and current_input_buffer[-2].isdigit()):
-                            value = int(current_input_buffer[-2] + current_input_buffer[-1] + "0")
-                            if (value > 255):
-                                continue
-                            else:
-                                log.output(logger.LOG_level("INFO"), f"Color value is valide: {value}, last two values in buffer {current_input_buffer[-2]} {current_input_buffer[-1]}")
-                        else:
-                            log.output(logger.LOG_level("INFO"), f"Last two value in buffer no digits: {current_input_buffer[-2]}, {current_input_buffer[-1]}")
-                    if (len(current_input_buffer) +1 <= max_input_buffer_len):
-                        current_input_buffer += "0"
-                        log.output(logger.LOG_level("INFO"), f"Entered {current_input_buffer}")
-                if (Mode.current == Mode.RESIZE_SURFACE):
-                    if (len(current_input_buffer)+1 <= max_input_buffer_len):
-                        current_input_buffer += "0"
-            if (event.key == pygame.K_1 or event.key == pygame.K_KP1):
-                if (Mode.current == Mode.SELECT_COLOR):
-                    current_buffer_colors_index = 0
-                    Mode.current = Mode.NORMAL
-                    log.output(logger.LOG_level("INFO"), f"Entered {get_mode_type_code_to_str(Mode.current)}")
-                if (Mode.current == Mode.SET_COLOR):
-                    if (len(current_input_buffer) >= 2):
-                        if (current_input_buffer[-1].isdigit() and current_input_buffer[-2].isdigit()):
-                            value = int(current_input_buffer[-2] + current_input_buffer[-1] + "1")
-                            if (value > 255):
-                                continue
-                            else:
-                                log.output(logger.LOG_level("INFO"), f"Color value is valide: {value}, last two values in buffer {current_input_buffer[-2]} {current_input_buffer[-1]}")
-                        else:
-                            log.output(logger.LOG_level("INFO"), f"Last two value in buffer no digits: {current_input_buffer[-2]}, {current_input_buffer[-1]}")
-                    if (len(current_input_buffer) +1 <= max_input_buffer_len):
-                        current_input_buffer += "1"
-                        log.output(logger.LOG_level("INFO"), f"Entered {current_input_buffer}")
-                if (Mode.current == Mode.RESIZE_SURFACE):
-                    if (len(current_input_buffer)+1 <= max_input_buffer_len):
-                        current_input_buffer += "1"
-            if (event.key == pygame.K_2 or event.key == pygame.K_KP2):
-                if (Mode.current == Mode.SELECT_COLOR):
-                    current_buffer_colors_index = 1
-                    Mode.current = Mode.NORMAL
-                    log.output(logger.LOG_level("INFO"), f"Entered {get_mode_type_code_to_str(Mode.current)}")
-                if (Mode.current == Mode.SET_COLOR):
-                    if (len(current_input_buffer) >= 2):
-                        if (current_input_buffer[-1].isdigit() and current_input_buffer[-2].isdigit()):
-                            value = int(current_input_buffer[-2] + current_input_buffer[-1] + "2")
-                            if (value > 255):
-                                continue
-                            else:
-                                log.output(logger.LOG_level("INFO"), f"Color value is valide: {value}, last two values in buffer {current_input_buffer[-2]} {current_input_buffer[-1]}")
-                        else:
-                            log.output(logger.LOG_level("INFO"), f"Last two value in buffer no digits: {current_input_buffer[-2]}, {current_input_buffer[-1]}")
-                    if (len(current_input_buffer) +1 <= max_input_buffer_len):
-                        current_input_buffer += "2"
-                        log.output(logger.LOG_level("INFO"), f"Entered {current_input_buffer}")
-                if (Mode.current == Mode.RESIZE_SURFACE):
-                    if (len(current_input_buffer)+1 <= max_input_buffer_len):
-                        current_input_buffer += "2"
-            if (event.key == pygame.K_3 or event.key == pygame.K_KP3):
-                if (Mode.current == Mode.SELECT_COLOR):
-                    current_buffer_colors_index = 2
-                    Mode.current = Mode.NORMAL
-                    log.output(logger.LOG_level("INFO"), f"Entered {get_mode_type_code_to_str(Mode.current)}")
-                if (Mode.current == Mode.SET_COLOR):
-                    if (len(current_input_buffer) >= 2):
-                        if (current_input_buffer[-1].isdigit() and current_input_buffer[-2].isdigit()):
-                            value = int(current_input_buffer[-2] + current_input_buffer[-1] + "3")
-                            if (value > 255):
-                                continue
-                            else:
-                                log.output(logger.LOG_level("INFO"), f"Color value is valide: {value}")
-                        else:
-                            log.output(logger.LOG_level("INFO"), f"Last two value in buffer no digits: {current_input_buffer[-2]}, {current_input_buffer[-1]}")
-                    if (len(current_input_buffer) +1 <= max_input_buffer_len):
-                        current_input_buffer += "3"
-                        log.output(logger.LOG_level("INFO"), f"Entered {current_input_buffer}")
-                if (Mode.current == Mode.RESIZE_SURFACE):
-                    if (len(current_input_buffer)+1 <= max_input_buffer_len):
-                        current_input_buffer += "3"
-            if (event.key == pygame.K_4 or event.key == pygame.K_KP4):
-                if (Mode.current == Mode.SELECT_COLOR):
-                    current_buffer_colors_index = 3
-                    Mode.current = Mode.NORMAL
-                    log.output(logger.LOG_level("INFO"), f"Entered {get_mode_type_code_to_str(Mode.current)}")
-                if (Mode.current == Mode.SET_COLOR):
-                    if (len(current_input_buffer) >= 2):
-                        if (current_input_buffer[-1].isdigit() and current_input_buffer[-2].isdigit()):
-                            value = int(current_input_buffer[-2] + current_input_buffer[-1] + "4")
-                            if (value > 255):
-                                continue
-                            else:
-                                log.output(logger.LOG_level("INFO"), f"Color value is valide: {value}, last two values in buffer {current_input_buffer[-2]} {current_input_buffer[-1]}")
-                        else:
-                            log.output(logger.LOG_level("INFO"), f"Last two value in buffer no digits: {current_input_buffer[-2]}, {current_input_buffer[-1]}")
-                    if (len(current_input_buffer) +1 <= max_input_buffer_len):
-                        current_input_buffer += "4"
-                        log.output(logger.LOG_level("INFO"), f"Entered {current_input_buffer}")
-                if (Mode.current == Mode.RESIZE_SURFACE):
-                    if (len(current_input_buffer)+1 <= max_input_buffer_len):
-                        current_input_buffer += "4"
-            if (event.key == pygame.K_5 or event.key == pygame.K_KP5):
-                if (Mode.current == Mode.SELECT_COLOR):
-                    current_buffer_colors_index = 4
-                    Mode.current = Mode.NORMAL
-                    log.output(logger.LOG_level("INFO"), f"Entered {get_mode_type_code_to_str(Mode.current)}")
-                if (Mode.current == Mode.SET_COLOR):
-                    if (len(current_input_buffer) >= 2):
-                        if (current_input_buffer[-1].isdigit() and current_input_buffer[-2].isdigit()):
-                            value = int(current_input_buffer[-2] + current_input_buffer[-1] + "5")
-                            if (value > 255):
-                                continue
-                            else:
-                                log.output(logger.LOG_level("INFO"), f"Color value is valide: {value}, last two values in buffer {current_input_buffer[-2]} {current_input_buffer[-1]}")
-                        else:
-                            log.output(logger.LOG_level("INFO"), f"Last two value in buffer no digits: {current_input_buffer[-2]}, {current_input_buffer[-1]}")
-                    if (len(current_input_buffer) +1 <= max_input_buffer_len):
-                        current_input_buffer += "5"
-                        log.output(logger.LOG_level("INFO"), f"Entered {current_input_buffer}")
-                if (Mode.current == Mode.RESIZE_SURFACE):
-                    if (len(current_input_buffer)+1 <= max_input_buffer_len):
-                        current_input_buffer += "5"
-            if (event.key == pygame.K_6 or event.key == pygame.K_KP6):
-                if (Mode.current == Mode.SELECT_COLOR):
-                    current_buffer_colors_index = 5
-                    Mode.current = Mode.NORMAL
-                    log.output(logger.LOG_level("INFO"), f"Entered {get_mode_type_code_to_str(Mode.current)}")
-                if (Mode.current == Mode.SET_COLOR):
-                    if (len(current_input_buffer) >= 2):
-                        if (current_input_buffer[-1].isdigit() and current_input_buffer[-2].isdigit()):
-                            value = int(current_input_buffer[-2] + current_input_buffer[-1] + "6")
-                            if (value > 255):
-                                continue
-                            else:
-                                log.output(logger.LOG_level("INFO"), f"Color value is valide: {value}, last two values in buffer {current_input_buffer[-2]} {current_input_buffer[-1]}")
-                        else:
-                            log.output(logger.LOG_level("INFO"), f"Last two value in buffer no digits: {current_input_buffer[-2]}, {current_input_buffer[-1]}")
-                    if (len(current_input_buffer) +1 <= max_input_buffer_len):
-                        current_input_buffer += "6"
-                        log.output(logger.LOG_level("INFO"), f"Entered {current_input_buffer}")
-                if (Mode.current == Mode.RESIZE_SURFACE):
-                    if (len(current_input_buffer)+1 <= max_input_buffer_len):
-                        current_input_buffer += "6"
-            if (event.key == pygame.K_7 or event.key == pygame.K_KP7):
-                if (Mode.current == Mode.SELECT_COLOR):
-                    current_buffer_colors_index = 6
-                    Mode.current = Mode.NORMAL
-                    log.output(logger.LOG_level("INFO"), f"Entered {get_mode_type_code_to_str(Mode.current)}")
-                if (Mode.current == Mode.SET_COLOR):
-                    if (len(current_input_buffer) >= 2):
-                        if (current_input_buffer[-1].isdigit() and current_input_buffer[-2].isdigit()):
-                            value = int(current_input_buffer[-2] + current_input_buffer[-1] + "7")
-                            if (value > 255):
-                                continue
-                            else:
-                                log.output(logger.LOG_level("INFO"), f"Color value is valide: {value}, last two values in buffer {current_input_buffer[-2]} {current_input_buffer[-1]}")
-                        else:
-                            log.output(logger.LOG_level("INFO"), f"Last two value in buffer no digits: {current_input_buffer[-2]}, {current_input_buffer[-1]}")
-                    if (len(current_input_buffer) +1 <= max_input_buffer_len):
-                        current_input_buffer += "7"
-                        log.output(logger.LOG_level("INFO"), f"Entered {current_input_buffer}")
-                if (Mode.current == Mode.RESIZE_SURFACE):
-                    if (len(current_input_buffer)+1 <= max_input_buffer_len):
-                        current_input_buffer += "7"
-            if (event.key == pygame.K_8 or event.key == pygame.K_KP8):
-                if (Mode.current == Mode.SELECT_COLOR):
-                    current_buffer_colors_index = 7
-                    Mode.current = Mode.NORMAL
-                    log.output(logger.LOG_level("INFO"), f"Entered {get_mode_type_code_to_str(Mode.current)}")
-                if (Mode.current == Mode.SET_COLOR):
-                    if (len(current_input_buffer) >= 2):
-                        if (current_input_buffer[-1].isdigit() and current_input_buffer[-2].isdigit()):
-                            value = int(current_input_buffer[-2] + current_input_buffer[-1] + "8")
-                            if (value > 255):
-                                continue
-                            else:
-                                log.output(logger.LOG_level("INFO"), f"Color value is valide: {value}, last two values in buffer {current_input_buffer[-2]} {current_input_buffer[-1]}")
-                        else:
-                            log.output(logger.LOG_level("INFO"), f"Last two value in buffer no digits: {current_input_buffer[-2]}, {current_input_buffer[-1]}")
-                    if (len(current_input_buffer) +1 <= max_input_buffer_len):
-                        current_input_buffer += "8"
-                        log.output(logger.LOG_level("INFO"), f"Entered {current_input_buffer}")
-                if (Mode.current == Mode.RESIZE_SURFACE):
-                    if (len(current_input_buffer)+1 <= max_input_buffer_len):
-                        current_input_buffer += "8"
-            if (event.key == pygame.K_9 or event.key == pygame.K_KP9):
-                if (Mode.current == Mode.SELECT_COLOR):
-                    current_buffer_colors_index = 8
-                    Mode.current = Mode.NORMAL
-                    log.output(logger.LOG_level("INFO"), f"Entered {get_mode_type_code_to_str(Mode.current)}")
-                if (Mode.current == Mode.SET_COLOR):
-                    if (len(current_input_buffer) >= 2):
-                        if (current_input_buffer[-1].isdigit() and current_input_buffer[-2].isdigit()):
-                            value = int(current_input_buffer[-2] + current_input_buffer[-1] + "9")
-                            if (value > 255):
-                                continue
-                            else:
-                                log.output(logger.LOG_level("INFO"), f"Color value is valide: {value}, last two values in buffer {current_input_buffer[-2]} {current_input_buffer[-1]}")
-                        else:
-                            log.output(logger.LOG_level("INFO"), f"Last two value in buffer no digits: {current_input_buffer[-2]}, {current_input_buffer[-1]}")
-                    if (len(current_input_buffer) +1 <= 16):
-                        current_input_buffer += "9"
-                        log.output(logger.LOG_level("INFO"), f"Entered {current_input_buffer}")
-                if (Mode.current == Mode.RESIZE_SURFACE):
-                    if (len(current_input_buffer)+1 <= max_input_buffer_len):
-                        current_input_buffer += "9"
-
-            if (event.key == pygame.K_r):
-                if (Mode.current == Mode.SET_COLOR):
-                    current_input_buffer += "r"
-                    log.output(logger.LOG_level("INFO"), f"Entered {current_input_buffer}")
-            if (event.key == pygame.K_g):
-                if (Mode.current == Mode.SET_COLOR):
-                    current_input_buffer += "g"
-                    log.output(logger.LOG_level("INFO"), f"Entered {current_input_buffer}")
-            if (event.key == pygame.K_b):
-                if (Mode.current == Mode.SET_COLOR):
-                    current_input_buffer += "b"
-                    log.output(logger.LOG_level("INFO"), f"Entered {current_input_buffer}")
-            if (event.key == pygame.K_a):
-                if (Mode.current == Mode.SET_COLOR):
-                    current_input_buffer += "a"
-                    log.output(logger.LOG_level("INFO"), f"Entered {current_input_buffer}")
-
-            if (event.key == pygame.K_w):
-                if (Mode.current == Mode.RESIZE_SURFACE):
-                    if (len(current_input_buffer)+1 <= max_input_buffer_len):
-                        current_input_buffer += "w"
-            if (event.key == pygame.K_h):
-                if (Mode.current == Mode.RESIZE_SURFACE):
-                    if (len(current_input_buffer)+1 <= max_input_buffer_len):
-                        current_input_buffer += "h"
+                    clear_text_buffer()
 
             if (event.key == pygame.K_BACKSPACE):
                 if (Mode.current == Mode.SET_COLOR):
-                    current_input_buffer = ""
+                    clear_text_buffer()
                     Mode.current = Mode.NORMAL
                     log.output(logger.LOG_level("INFO"), f"Changed mode to normal from set color")
                 if (Mode.current == Mode.RESIZE_SURFACE):
-                    current_input_buffer = ""
+                    clear_text_buffer()
                     Mode.current = Mode.NORMAL
                     log.output(logger.LOG_level("INFO"), f"Changed mode to normal from resize surface")
+
+            if (Mode.current == Mode.SET_COLOR and (event.unicode.isdigit() or (event.unicode in ["r", "g", "b", "a"]))):
+                append_str_to_text_buffer(event.unicode)
+                last_number_in_input = ""
+                #print(f"{current_input_buffer}, reverse:{current_input_buffer[::-1]}")
+                # code to stop numbers being larger than 255
+                for char in current_input_buffer[::-1]:
+                    #print(f"char={char}")
+                    if not char.isdigit():
+                        #print(f"break at {char}")
+                        break
+                    last_number_in_input += char
+                if len(last_number_in_input) > 0:
+                    last_number_in_input = last_number_in_input[::-1]
+                    print(last_number_in_input)
+                    val = int(last_number_in_input+event.unicode)
+                    if val >= 255:
+                        continue
+                current_input_buffer += event.unicode
+            if (Mode.current == Mode.SELECT_COLOR and event.unicode.isdigit()):
+                index = int(event.unicode)
+                if (index >= 0 and index <= 9):
+                    # Shift the indexs by one place.
+                    index = (index+9) % 10
+                    log.output(logger.LOG_level("INFO"), f"Switched from color index {current_buffer_colors_index} to {index}")
+                    current_buffer_colors_index = index
+                    Mode.current = Mode.NORMAL
+                    log.output(logger.LOG_level("INFO"), f"Entered {get_mode_type_code_to_str(Mode.current)}")
+            if (Mode.current == Mode.RESIZE_SURFACE and (event.unicode.isdigit() or event.unicode in ["w", "h"])):
+                append_str_to_text_buffer(event.unicode)
+
+            if (Mode.current == Mode.LAYERS and event.unicode.isdigit()):
+                append_str_to_text_buffer(event.unicode)
 
         if (event.type == pygame.KEYUP):
             if (event.key == Key.move_camera):

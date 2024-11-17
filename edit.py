@@ -48,20 +48,20 @@ class State:
     max_editing_surface_zoom = 100
     min_editing_surface_zoom = 0
     display_grid_lines = True
-    text_input_buffer = ""
+    text_io_buffer = ""
     max_text_buffer_char_count = 64
     clear_text_buffer_on_write = False
 
 def append_str_to_text_buffer(string: str) -> None:
     if State.clear_text_buffer_on_write:
-        State.text_input_buffer = ""
+        State.text_io_buffer = ""
         State.clear_text_buffer_on_write = False
-    append_char_count = State.max_text_buffer_char_count - len(State.text_input_buffer)
+    append_char_count = State.max_text_buffer_char_count - len(State.text_io_buffer)
     if append_char_count <= 0:
         return None
-    State.text_input_buffer = State.text_input_buffer + string[:append_char_count]
+    State.text_io_buffer = State.text_io_buffer + string[:append_char_count]
 def clear_text_buffer() -> None:
-    State.text_input_buffer = ""
+    State.text_io_buffer = ""
 
 class Mode:
     NORMAL = 0
@@ -530,7 +530,7 @@ while True:
                     current_color_channel = None
                     final_color = buffer_colors[current_buffer_colors_index]
                     current_number_str = ""
-                    for char in State.text_input_buffer:
+                    for char in State.text_io_buffer:
                         if (char == "r"):
                             if (len(current_number_str) > 0):
                                 if (char == "r"):
@@ -623,7 +623,7 @@ while True:
                     width = surface_layers[State.current_selected_surface_layer_index].get_width()
                     height = surface_layers[State.current_selected_surface_layer_index].get_height()
                     number_str = ""
-                    for char in State.text_input_buffer:
+                    for char in State.text_io_buffer:
 
                         if (char == "w"):
                             if (len(number_str) > 0):
@@ -642,10 +642,10 @@ while True:
                     State.unsaved_changes = True
                     log.output(logger.LOG_level("INFO"), f"Changed editing surface size to ({surface_layers[State.current_selected_surface_layer_index].get_width()}, {surface_layers[State.current_selected_surface_layer_index].get_height()})")
                 if (Mode.current == Mode.LAYERS):
-                    if len(State.text_input_buffer) < 1:
+                    if len(State.text_io_buffer) < 1:
                         log.output(logger.LOG_level("WARN", f"Input Text Buffer is empty when submitting input to layers processor"))
                         continue
-                    layer_index = int(State.text_input_buffer)
+                    layer_index = int(State.text_io_buffer)
                     if (layer_index < 0):
                         clear_text_buffer()
                         append_str_to_text_buffer("Error: layer index cannot be negative")
@@ -674,9 +674,9 @@ while True:
 
             if (Mode.current == Mode.SET_COLOR and (event.unicode.isdigit() or (event.unicode in ["r", "g", "b", "a"]))):
                 last_number_in_input = ""
-                #print(f"{State.text_input_buffer}, reverse:{State.text_input_buffer[::-1]}")
+                #print(f"{State.text_io_buffer}, reverse:{State.text_io_buffer[::-1]}")
                 # code to stop numbers being larger than 255
-                for char in State.text_input_buffer[::-1]:
+                for char in State.text_io_buffer[::-1]:
                     #print(f"char={char}")
                     if not char.isdigit():
                         #print(f"break at {char}")
@@ -688,7 +688,7 @@ while True:
                     val = int(last_number_in_input+event.unicode)
                     if val >= 255:
                         continue
-                State.text_input_buffer += event.unicode
+                State.text_io_buffer += event.unicode
             if (Mode.current == Mode.SELECT_COLOR and event.unicode.isdigit()):
                 index = int(event.unicode)
                 if (index >= 0 and index <= 9):
@@ -785,13 +785,13 @@ while True:
     screen.blit(display_mode_text_background_surface, (screen_size[0]//8, screen_size[1] - display_mode_text_surface.get_height() -5))
     screen.blit(display_mode_text_surface, (screen_size[0]//8, screen_size[1] - display_mode_text_surface.get_height() -5))
 
-    display_input_buffer_surface = app_font_object.render(f"{State.text_input_buffer}", True, (app_text_color))
+    display_io_buffer_surface = app_font_object.render(f"{State.text_io_buffer}", True, (app_text_color))
 
-    display_input_buffer_background_surface = pygame.Surface((display_input_buffer_surface.get_width(), display_input_buffer_surface.get_height()))
+    display_input_buffer_background_surface = pygame.Surface((display_io_buffer_surface.get_width(), display_io_buffer_surface.get_height()))
     display_input_buffer_background_surface.fill(app_text_background_color)
     display_input_buffer_background_surface.set_alpha(app_text_background_alpha)
-    screen.blit(display_input_buffer_background_surface, (screen_size[0] - display_input_buffer_surface.get_width() - 5, screen_size[1] - display_input_buffer_surface.get_height() -5))
-    screen.blit(display_input_buffer_surface, (screen_size[0] - display_input_buffer_surface.get_width() - 5, screen_size[1] - display_input_buffer_surface.get_height() -5))
+    screen.blit(display_input_buffer_background_surface, (screen_size[0] - display_io_buffer_surface.get_width() - 5, screen_size[1] - display_io_buffer_surface.get_height() -5))
+    screen.blit(display_io_buffer_surface, (screen_size[0] - display_io_buffer_surface.get_width() - 5, screen_size[1] - display_io_buffer_surface.get_height() -5))
 
     ui_display_layer_index.update_text(f"{State.current_selected_surface_layer_index}/{len(surface_layers)}") # TODO: update when the current layer get switched.
     ui_display_layer_index.set_top_right_pos((screen_size[0]-5, display_color_rect_screen_verticle_gap +display_color_rect_size[1] +10 + display_color_rect_text_background_surface.get_height())) # TODO: update only when the window is resized.

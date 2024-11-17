@@ -50,7 +50,7 @@ class State:
     display_grid_lines = True
     text_io_buffer = ""
     max_text_buffer_char_count = 64
-    clear_text_buffer_on_write = False
+    clear_text_buffer_on_write = False # clear text buffer on next write
 
 def append_str_to_text_buffer(string: str) -> None:
     if State.clear_text_buffer_on_write:

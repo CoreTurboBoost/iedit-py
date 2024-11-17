@@ -50,8 +50,12 @@ class State:
     display_grid_lines = True
     text_input_buffer = ""
     max_text_buffer_char_count = 64
+    clear_text_buffer_on_write = False
 
 def append_str_to_text_buffer(string: str) -> None:
+    if State.clear_text_buffer_on_write:
+        State.text_input_buffer = ""
+        State.clear_text_buffer_on_write = False
     append_char_count = State.max_text_buffer_char_count - len(State.text_input_buffer)
     if append_char_count <= 0:
         return None
@@ -645,14 +649,15 @@ while True:
                     if (layer_index < 0):
                         clear_text_buffer()
                         append_str_to_text_buffer("Error: layer index cannot be negative")
+                        State.clear_text_buffer_on_write = True
                         continue # Catch invalid case of negative inputs
                     if (layer_index >= len(surface_layers)):
                         clear_text_buffer()
                         append_str_to_text_buffer("Error: layer index out of bound")
+                        State.clear_text_buffer_on_write = True
                         continue # Error selected surface index is not valid/out of range
                     State.current_selected_surface_layer_index = layer_index
                     Mode.current = Mode.NORMAL
-                    clear_text_buffer()
 
             if (event.key == pygame.K_BACKSPACE):
                 if (Mode.current == Mode.SET_COLOR):

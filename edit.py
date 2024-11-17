@@ -641,9 +641,11 @@ while True:
                     State.unsaved_changes = True
                     log.output(logger.LOG_level("INFO"), f"Changed editing surface size to ({surface_layers[State.current_selected_surface_layer_index].get_width()}, {surface_layers[State.current_selected_surface_layer_index].get_height()})")
                 if (Mode.current == Mode.LAYERS):
-                    layer_index = int(State.text_input_buffer) # Should not fail (if it does, error in sanitization, buf-not-cleared before menu switch, allowing other characters into buffer when in layers mode
+                    if len(State.text_input_buffer) < 1:
+                        continue
+                    layer_index = int(State.text_input_buffer)
                     if (layer_index < 0):
-                        continue # Error, but how, user should not be able to enter '-' into the text input
+                        continue # Catch invalid case of negative inputs
                     if (layer_index >= len(surface_layers)):
                         continue # Error selected surface index is not valid/out of range
                     State.current_selected_surface_layer_index = layer_index

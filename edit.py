@@ -643,8 +643,12 @@ while True:
                         continue
                     layer_index = int(State.text_input_buffer)
                     if (layer_index < 0):
+                        clear_text_buffer()
+                        append_str_to_text_buffer("Error: layer index cannot be negative")
                         continue # Catch invalid case of negative inputs
                     if (layer_index >= len(surface_layers)):
+                        clear_text_buffer()
+                        append_str_to_text_buffer("Error: layer index out of bound")
                         continue # Error selected surface index is not valid/out of range
                     State.current_selected_surface_layer_index = layer_index
                     Mode.current = Mode.NORMAL

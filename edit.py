@@ -12,8 +12,8 @@ if (__name__ != "__main__"):
     sys.exit(1)
 
 VERSION_MAJOR = 0
-VERSION_MINOR = 8
-VERSION_PATCH = 1
+VERSION_MINOR = 9
+VERSION_PATCH = 0
 
 log = logger.LOG()
 log.set_warnlevel(logger.LOG_level("INFO"))
@@ -401,7 +401,12 @@ def mouse_pos_on_cur_image_layer() -> Vec2:
     reverse_camera_mouse_position = camera_reverse_transform(State.last_mouse_position)
     assume_or_exception(not (editing_surface_screen_proportionality_xy[0] == 0 and editing_surface_screen_proportionality_xy[1] == 0))
     assume_or_exception(State.editing_surface_zoom != 0)
-    mouse_position_on_editing_surface_position = (int(reverse_camera_mouse_position[0]/(editing_surface_screen_proportionality_xy[0]*State.editing_surface_zoom)), int(reverse_camera_mouse_position[1]/(editing_surface_screen_proportionality_xy[1]*State.editing_surface_zoom)))
+    take_away_x, take_away_y = 0, 0
+    if (reverse_camera_mouse_position[0] < 0):
+        take_away_x = +1
+    if (reverse_camera_mouse_position[1] < 0):
+        take_away_y = +1
+    mouse_position_on_editing_surface_position = (int(reverse_camera_mouse_position[0]/(editing_surface_screen_proportionality_xy[0]*State.editing_surface_zoom))+surface_layers[State.current_selected_surface_layer_index].get_width()//2-take_away_x, int(reverse_camera_mouse_position[1]/(editing_surface_screen_proportionality_xy[1]*State.editing_surface_zoom))+surface_layers[State.current_selected_surface_layer_index].get_height()//2-take_away_y)
     return mouse_position_on_editing_surface_position
 
 ui_display_layer_index = UITextElement(Vec2(0, 0), f"{State.current_selected_surface_layer_index}/{len(surface_layers)}", 1, 1)
@@ -752,6 +757,8 @@ while True:
 
     editing_surface_screen_proportionality_xy = (screen_size[0]/640, screen_size[1]/480)
     transformed_editing_surface = pygame.transform.scale(surface_layers[State.current_selected_surface_layer_index], (surface_layers[State.current_selected_surface_layer_index].get_width()*editing_surface_screen_proportionality_xy[0]*State.editing_surface_zoom, surface_layers[State.current_selected_surface_layer_index].get_height()*editing_surface_screen_proportionality_xy[1]*State.editing_surface_zoom))
+    transformed_editing_surface_rect = transformed_editing_surface.get_rect(center=(0, 0))
+    transformed_editing_surface_pos = transformed_editing_surface_rect.topleft
 
     editing_surface_average_color = pygame.transform.average_color(surface_layers[State.current_selected_surface_layer_index])
     editing_surface_negated_color = pygame.Color(255 - editing_surface_average_color[0], 255 - editing_surface_average_color[1], 255 - editing_surface_average_color[2])
@@ -759,12 +766,12 @@ while True:
         editing_surface_negated_color[0] += 32
         editing_surface_negated_color[1] += 32
         editing_surface_negated_color[2] += 32
-    screen.blit(transformed_editing_surface, camera_transform((0, 0)))
+    screen.blit(transformed_editing_surface, camera_transform(transformed_editing_surface_pos))
     if State.display_grid_lines:
-        for x in range(surface_layers[State.current_selected_surface_layer_index].get_width()+1):
-            pygame.draw.line(screen, editing_surface_negated_color, camera_transform((x*editing_surface_screen_proportionality_xy[0]*State.editing_surface_zoom, 0)), camera_transform((x*editing_surface_screen_proportionality_xy[0]*State.editing_surface_zoom, transformed_editing_surface.get_height())))
-        for y in range(surface_layers[State.current_selected_surface_layer_index].get_height()+1):
-            pygame.draw.line(screen, editing_surface_negated_color, camera_transform((0, y*editing_surface_screen_proportionality_xy[1]*State.editing_surface_zoom)), camera_transform((transformed_editing_surface.get_width(), y*editing_surface_screen_proportionality_xy[1]*State.editing_surface_zoom)))
+        for x in range(-surface_layers[State.current_selected_surface_layer_index].get_width()//2, surface_layers[State.current_selected_surface_layer_index].get_width()//2+1):
+            pygame.draw.line(screen, editing_surface_negated_color, camera_transform((x*editing_surface_screen_proportionality_xy[0]*State.editing_surface_zoom, transformed_editing_surface_pos[0])), camera_transform((x*editing_surface_screen_proportionality_xy[0]*State.editing_surface_zoom, transformed_editing_surface.get_height()//2)))
+        for y in range(-surface_layers[State.current_selected_surface_layer_index].get_height()//2, surface_layers[State.current_selected_surface_layer_index].get_height()//2+1):
+            pygame.draw.line(screen, editing_surface_negated_color, camera_transform((transformed_editing_surface_pos[0], y*editing_surface_screen_proportionality_xy[1]*State.editing_surface_zoom)), camera_transform((transformed_editing_surface.get_width()//2, y*editing_surface_screen_proportionality_xy[1]*State.editing_surface_zoom)))
     
     display_color_rect_size = (screen_size[0]//25, screen_size[1]//25)
     display_color_rect_start_x_position = screen_size[0] - (display_color_rect_size[0]+display_color_rect_horizontal_gap)*10 - display_color_rect_horizontal_gap

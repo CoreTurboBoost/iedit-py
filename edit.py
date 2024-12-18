@@ -712,6 +712,7 @@ while True:
                 append_str_to_text_buffer(event.unicode)
 
             if (Mode.current == Mode.LAYERS and event.unicode.isdigit()):
+                # TODO, support more than just layer selection, allow for letter to be begain with, for specific commands. Such as bl (blend layers) <blend-mode> <base-layer-index> <blend-layer-index>. Have these as non-destructive (do not apply them to the layers, only visually present them as such, only on writes would you apply them to the saved image (compile the final image), but not the layers themselves)
                 append_str_to_text_buffer(event.unicode)
 
         if (event.type == pygame.KEYUP):
@@ -756,6 +757,7 @@ while True:
     screen.fill(bg_color)
 
     editing_surface_screen_proportionality_xy = (screen_size[0]/640, screen_size[1]/480)
+    # Scale from the center of the screen. Not the top left of the surface.
     transformed_editing_surface = pygame.transform.scale(surface_layers[State.current_selected_surface_layer_index], (surface_layers[State.current_selected_surface_layer_index].get_width()*editing_surface_screen_proportionality_xy[0]*State.editing_surface_zoom, surface_layers[State.current_selected_surface_layer_index].get_height()*editing_surface_screen_proportionality_xy[1]*State.editing_surface_zoom))
     transformed_editing_surface_rect = transformed_editing_surface.get_rect(center=(0, 0))
     transformed_editing_surface_pos = transformed_editing_surface_rect.topleft

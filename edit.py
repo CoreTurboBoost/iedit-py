@@ -21,6 +21,70 @@ log.set_warnlevel(logger.LOG_level("INFO"))
 
 pygame.init()
 
+class Image:
+    def __init__(self, surface: Surface, position: Vec2):
+        '''
+        param: position is the center of the surface, and will always stay the same.
+        '''
+        self.surface = surface
+        self.trans_rect = None
+        self.trans_surface = None
+        self.scale_mul = 1.0
+        self.max_scale = 5.0
+        self.min_scale = 1.0
+        self.calc_transform()
+    def set_max_scale(new_scale: float) -> None:
+        self.max_scale = max_scale
+        if (max_scale < self.max_scale):
+            self.scale_mul = min(max_scale, self.scale_mul)
+            self.calc_transform()
+    def offset_scale(scale_offset: float) -> None:
+        if scale_offset + self.scale_mul <= self.max_scale:
+            self.scale_mul += scale_offset
+    def calc_transform(self) -> None:
+        self.trans_surface = pygame.transform.scale(self.surface, (self.surface.get_width()*self.scale_mul, self.surface.get_height()*self.scale_mul))
+        self.trans_rect = self.trans_surface.get_rect(center=self.trans_rect.center)
+    def get_twidth(self) -> int:
+        '''
+        Get transformed surface pixel width
+        '''
+        returelf.trans_surface.get_width()
+    def get_theight(self) -> int:
+        '''
+        Get transformed surface pixel height
+        '''
+        returelf.trans_surface.get_height()
+    def get_tsize(self) -> Vec2:
+        '''
+        Get transformed surface pixel size
+        '''
+        returec2(self.trans_surface.get_size())
+    def get_owidth(self) -> int:
+        '''
+        Get original surface pixel width
+        '''
+        returelf.surface.get_width()
+    def get_owidth(self) -> int:
+        '''
+        Get original surface pixel height
+        '''
+        returelf.surface.get_height()
+    def get_osize(self) -> Vec2:
+        '''
+        Get original surface pixel size
+        '''
+        return Vec2(self.surface.get_size())
+    def get_cpos(self) -> Vec2:
+        '''
+        Get image center pixel position
+        '''
+        return self.trans_rect.center
+    def get_tpos(self) -> Vec2:
+        '''
+        Get transformed surface top left pixel position
+        '''
+        return self.trans_rect.topleft
+
 class Key:
     return_normal_mode = pygame.K_ESCAPE
     select_mode_select_color = pygame.K_s

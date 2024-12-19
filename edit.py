@@ -2,6 +2,7 @@
 
 import pygame
 from pygame.math import Vector2 as Vec2
+from pygame import (Surface, Rect)
 import sys
 import time
 

@@ -14,7 +14,7 @@ if (__name__ != "__main__"):
 
 VERSION_MAJOR = 0
 VERSION_MINOR = 10
-VERSION_PATCH = 0
+VERSION_PATCH = 1
 
 log = logger.LOG()
 log.set_warnlevel(logger.LOG_level("INFO"))
@@ -252,7 +252,7 @@ for arg_index in range(1, argc):
         print(" - set color (In normal mode): ", pygame.key.name(Key.select_mode_set_color))
         print(" - resize editing surface (In normal mode): ", pygame.key.name(Key.resize_editing_surface))
         print(" - layers management (In normal mode): ", pygame.key.name(Key.layer_mode_toggle))
-        print(" - undo editing surface modification (In normal mode): ", pygame.key.name(Key._undo_editing_surface_modification))
+        print(" - undo editing surface modification (In normal mode): ", pygame.key.name(Key.undo_editing_surface_modification))
         print(" - save current layer (In normal mode): ", pygame.key.name(Key.save_current_layer_surface))
         print(" - pick current hovered color (In normal mode): ", pygame.key.name(Key.pick_color))
         print(" - confirm (In any mode, used for prompts): ", pygame.key.name(Key.confirm))

@@ -12,8 +12,7 @@ Controls:
  - key u, undo editing surface modification (In normal mode).
  - key w, save editing surface (In normal mode).
  - key return, confirm (In any mode, used for prompts).
- - The key's can also be found by running the application with the --key-bindings cli argument.
- For more detailed information on the controls pass the '--key-bindings' flag to the program
+ - For more detailed information on the controls pass the '--key-bindings' flag to the program
 
 UI:
  - Top-Right color pallet boxes. The box with a border is the currently selected box.

@@ -7,11 +7,6 @@ def get_last_callback (relative_frame = 2):
     total_stack = inspect.stack()
     frameinfo = total_stack[relative_frame][0]
     
-##    print()
-##    print("[[",total_stack[relative_frame][4][0], total_stack[relative_frame][2],"]]") # [0] is the line of code being executed 
-##    print("frame  [", relative_frame, "] = ",frameinfo.f_code.co_name)
-##    inspect.stack()[relative_frame][0]
-##    print()
     file_path = frameinfo.f_code.co_filename
     filename = os.path.basename(frameinfo.f_code.co_filename)
     line_number = frameinfo.f_lineno
@@ -55,13 +50,12 @@ class LOG (object):
     def __init__ (self, file = None):
         self.warnlevel = LOG_level("INFO")
         self.stop_on_level = -1
-        self.output_code = False # Whether to output the code on the specified line or not 
+        self.output_code = False
         self.ignored_files = []
         self.same_print_count = 1
         self.print_buffer = []
         self.stack_print_buffer = []
         self.stack_logs = False
-##        get_last_callback(0), get_last_callback(1), get_last_callback(2), get_last_callback(3)
 
     def ignore_file ( self, filename ):
         if not os.path.exists(filename):
@@ -132,20 +126,6 @@ class LOG (object):
         self.print_buffer.clear()
     
     def output ( self,  level : int, *data, write_file_path = None ):
-##        if len(data) == 1:
-##            data = data[0]
-##        elif len(data) > 1:
-##            tmp = ""
-##            print(" [ logger ] ,", type(""))
-##            for string in data:
-##                print(" [ logger ] ", type(string))
-##                if type(string) == type(""):
-##                    tmp += str(string)
-##                    if string[-1] != " ":
-##                        tmp += " "
-##                else:
-##                    tmp += str(string)
-##            data = tmp
         tmp = ""
         for string in data:
             tmp += str(string)
@@ -158,7 +138,6 @@ class LOG (object):
             else:
                 code_str = ""
             if not( file_line[0] in self.ignored_files ):
-                #out = ("[ "+ LOG_LEVEL_TO_STR( level ) + " ]  FILE =",file_line[0], " LINE =", str(file_line[2]) + code_str, " MSG =", data)
                 out = "[ " + str(LOG_LEVEL_TO_STR( level ) + " ] FILE = " + str(file_line[0]) + "  LINE = " + str(file_line[2]) + str(code_str) + "  MSG = " + str(data))
                 self.print_buffer.append(out)
                 if self.stack_logs:

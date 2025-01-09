@@ -1,5 +1,5 @@
 
-# Edit is a mode based graphical image editing tool
+# A mode based graphical image editing tool
 Uses python3 with the pygame-ce library.
 
 Controls:

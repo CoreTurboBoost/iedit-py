@@ -19,5 +19,4 @@ UI:
  - Under that there is RGBA value of the current selected color
  - Under that is the indicator showing the current layer index and the total number of layers ( (current-layer-index)/(total-number-of-layers))
  - Bottom-Left is the current selected mode.
- - Bottom-Right is the text input box. This will automatically show up when in a mode that uses the text input box.
- - Above that is the Error message box. This show the lattest error message, if there are any.
+ - Bottom-Right is the text input box. This will automatically show up when in a mode that uses the text input box. This is also used to output the programs state after an action.

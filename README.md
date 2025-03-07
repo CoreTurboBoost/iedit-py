@@ -3,7 +3,7 @@
 Uses python3 with the pygame-ce library.
 
 Controls:
- - Mouse wheel up, down, zooms in and out.
+ - Mouse wheel up or down zooms in or out.
  - Escape can be used to exit text prompts and return to normal mode.
  - key q, quits the program (In normal mode).
  - key s, select color (In normal mode).

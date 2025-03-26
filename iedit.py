@@ -324,6 +324,14 @@ if (len(input_layer_filepaths) == 0):
 per_layer_undo_objects = [[]] * len(input_layer_filepaths)
 log.output(logger.LOG_level("INFO"), f"per_layer_undo_objects: {per_layer_undo_objects}")
 
+def add_layer(path: str, surface: Surface) -> None:
+    global surface_layers, input_layer_filepaths, per_layer_undo_objects
+    log.output(logger.LOG_level("INFO"), f"Attempting to add new layer path:'{path}' surface:{surface}")
+    input_layer_filepaths.append(path)
+    surface_layers.append(surface)
+    per_layer_undo_objects.append([])
+    log.output(logger.LOG_level("INFO"), f"Successfully added new layer")
+
 def get_mode_type_code_to_str(mode_type_code):
     if (mode_type_code == Mode.NORMAL):
         return "normal"

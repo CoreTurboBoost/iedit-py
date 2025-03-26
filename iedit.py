@@ -48,27 +48,27 @@ class Image:
         '''
         Get transformed surface pixel width
         '''
-        returelf.trans_surface.get_width()
+        return self.trans_surface.get_width()
     def get_theight(self) -> int:
         '''
         Get transformed surface pixel height
         '''
-        returelf.trans_surface.get_height()
+        return self.trans_surface.get_height()
     def get_tsize(self) -> Vec2:
         '''
         Get transformed surface pixel size
         '''
-        returec2(self.trans_surface.get_size())
+        return Vec2(self.trans_surface.get_size())
     def get_owidth(self) -> int:
         '''
         Get original surface pixel width
         '''
-        returelf.surface.get_width()
+        return self.surface.get_width()
     def get_owidth(self) -> int:
         '''
         Get original surface pixel height
         '''
-        returelf.surface.get_height()
+        return self.surface.get_height()
     def get_osize(self) -> Vec2:
         '''
         Get original surface pixel size

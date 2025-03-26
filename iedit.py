@@ -293,13 +293,12 @@ del cli_error_count
 load_file_error_count = 0
 handled_filepaths = []
 for input_filepath in input_layer_filepaths:
-    try:
-        input_surface = pygame.image.load(input_filepath)
-    except FileNotFoundError:
-        print(f"Could not load file \'{input_filepath}\'")
+    input_surface, status, message = load_image(input_filepath)
+    if status == ImageLoadStates.NOT_FOUND:
+        print(message)
         input_surface = None
-    except pygame.error:
-        print(f"Pygame could not load in the image, {sys.exc_info()[1]}")
+    elif status == ImageLoadStates.PYGAME_ERROR:
+        print(message)
         load_file_error_count += 1
         continue
     if (input_filepath in handled_filepaths):

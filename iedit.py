@@ -737,19 +737,41 @@ while True:
                     if len(State.text_io_buffer) < 1:
                         log.output(logger.LOG_level("WARN"), f"Input Text Buffer is empty when submitting input to layers processor")
                         continue
-                    layer_index = int(State.text_io_buffer)
-                    if (layer_index < 0):
-                        clear_text_buffer()
-                        write_str_to_text_buffer("Error: layer index cannot be negative")
-                        State.clear_text_buffer_on_write = True
-                        continue # Catch invalid case of negative inputs
-                    if (layer_index >= len(surface_layers)):
-                        clear_text_buffer()
-                        write_str_to_text_buffer("Error: layer index out of bound")
-                        State.clear_text_buffer_on_write = True
-                        continue # Error selected surface index is not valid/out of range
-                    State.current_selected_surface_layer_index = layer_index
-                    Mode.current = Mode.NORMAL
+                    State.text_io_buffer = State.text_io_buffer.strip()
+                    if State.text_io_buffer.isdigit():
+                        layer_index = int(State.text_io_buffer)
+                        if (layer_index >= len(surface_layers)):
+                            clear_text_buffer()
+                            write_str_to_text_buffer("Error: layer index out of bound")
+                            State.clear_text_buffer_on_write = True
+                            continue # Error selected surface index is not valid/out of range
+                        State.current_selected_surface_layer_index = layer_index
+                        Mode.current = Mode.NORMAL
+                        continue
+                    text_buf_args = State.text_io_buffer.split(" ")
+                    while "" in text_buf_args:
+                        text_buf_args.remove("")
+                    operation = text_buf_args.pop(0)
+                    if operation == "n":
+                        if len(text_buf_args) == 0:
+                            write_str_to_text_buffer("Missing argument(s): <PATH> ...")
+                            continue
+                        for arg in text_buf_args:
+                            log.output(logger.LOG_level("INFO"), f"Adding a new layer through the layer manger with the path of '{arg}'")
+                            input_layer_filepaths.append("args")
+                            surface_layers.append(State.default_surface.copy())
+                    if operation == "l":
+                        if len(text_buf_args) == 0:
+                            write_str_to_text_buffer("Missing argument(s): <PATH> ...")
+                            continue
+                        for arg in text_buf_args:
+                            log.output(logger.LOG_level("INFO"), f"Attempting to load in image '{arg}'")
+                            loaded_surface, status, message = load_image(arg)
+                            if status != ImageLoadStates.NO_ERROR:
+                                write_str_to_text_buffer(f"Failed image load: {message}")
+                                continue
+                            input_layer_filepaths.append(arg)
+                            surface_layers.append(loaded_surface)
 
             if (event.key == pygame.K_BACKSPACE):
                 if (Mode.current == Mode.SET_COLOR):

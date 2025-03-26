@@ -721,7 +721,7 @@ while True:
                     log.output(logger.LOG_level("INFO"), f"Changed editing surface size to ({surface_layers[State.current_selected_surface_layer_index].get_width()}, {surface_layers[State.current_selected_surface_layer_index].get_height()})")
                 if (Mode.current == Mode.LAYERS):
                     if len(State.text_io_buffer) < 1:
-                        log.output(logger.LOG_level("WARN", f"Input Text Buffer is empty when submitting input to layers processor"))
+                        log.output(logger.LOG_level("WARN"), f"Input Text Buffer is empty when submitting input to layers processor")
                         continue
                     layer_index = int(State.text_io_buffer)
                     if (layer_index < 0):

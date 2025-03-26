@@ -768,8 +768,7 @@ while True:
                             continue
                         for arg in text_buf_args:
                             log.output(logger.LOG_level("INFO"), f"Adding a new layer through the layer manger with the path of '{arg}'")
-                            input_layer_filepaths.append("args")
-                            surface_layers.append(State.default_surface.copy())
+                            add_layer(arg, State.default_surface.copy())
                     if operation == "l":
                         if len(text_buf_args) == 0:
                             write_str_to_text_buffer("Missing argument(s): <PATH> ...")
@@ -780,8 +779,7 @@ while True:
                             if status != ImageLoadStates.NO_ERROR:
                                 write_str_to_text_buffer(f"Failed image load: {message}")
                                 continue
-                            input_layer_filepaths.append(arg)
-                            surface_layers.append(loaded_surface)
+                            add_layer(arg, loaded_surface)
 
             if (event.key == pygame.K_BACKSPACE):
                 if (Mode.current == Mode.SET_COLOR):

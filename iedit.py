@@ -116,6 +116,9 @@ class State:
     text_io_buffer = ""
     max_text_buffer_char_count = 64
     clear_text_buffer_on_write = False # clear text buffer on next write
+    default_surface = Surface((32, 32), pygame.SRCALPHA)
+    default_surface_color = ((200, 200, 200))
+State.default_surface.fill(State.default_surface_color)
 
 def write_str_to_text_buffer(string: str) -> None:
     State.text_io_buffer = string[:State.max_text_buffer_char_count]

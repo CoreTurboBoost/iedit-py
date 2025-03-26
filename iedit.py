@@ -497,7 +497,6 @@ ui_display_layer_index = UITextElement(Vec2(0, 0), f"{State.current_selected_sur
 ui_display_layer_index.set_top_right_pos(Vec2(10, 0))
 ui_display_surface_size = UITextElement(Vec2(5, 5), f"{surface_layers[State.current_selected_surface_layer_index].get_width()}w {surface_layers[State.current_selected_surface_layer_index].get_height()}h", 5, 5)
 
-
 previous_frame_time = time.time()
 clock = pygame.time.Clock()
 while True:

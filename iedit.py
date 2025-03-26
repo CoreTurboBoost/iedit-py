@@ -208,6 +208,21 @@ class UITextElement:
         self.text = new_text
         self.regenerate_surfaces()
 
+def print_keybindings():
+    print("Key bindings:")
+    print(" Can escape back to normal mode with key", pygame.key.name(Key.return_normal_mode))
+    print(" - select color (In normal mode): ", pygame.key.name(Key.select_mode_select_color))
+    print(" - set color (In normal mode): ", pygame.key.name(Key.select_mode_set_color))
+    print(" - resize editing surface (In normal mode): ", pygame.key.name(Key.resize_editing_surface))
+    print(" - layers management (In normal mode): ", pygame.key.name(Key.layer_mode_toggle))
+    print(" - undo editing surface modification (In normal mode): ", pygame.key.name(Key.undo_editing_surface_modification))
+    print(" - save current layer (In normal mode): ", pygame.key.name(Key.save_current_layer_surface))
+    print(" - pick current hovered color (In normal mode): ", pygame.key.name(Key.pick_color))
+    print(" - confirm (In any mode, used for prompts): ", pygame.key.name(Key.confirm))
+    print(" - fill bucket paint brush (In normal mode): " , pygame.key.name(Key.fill_bucket))
+    print(" - toggle grid lines (In normal mode): ", pygame.key.name(Key.toggle_grid_lines))
+    print(" - quit program without saving (or save warning) (In normal mode): ", pygame.key.name(Key.quit))
+
 input_layer_filepaths = []
 surface_layers = []
 
@@ -246,19 +261,7 @@ for arg_index in range(1, argc):
     if (arg == "--" and not cli_only_files_remain):
         cli_only_files_remain = True
     elif (arg == "--key-bindings" and not cli_only_files_remain):
-        print("Key bindings:")
-        print(" Can escape back to normal mode with key", pygame.key.name(Key.return_normal_mode))
-        print(" - select color (In normal mode): ", pygame.key.name(Key.select_mode_select_color))
-        print(" - set color (In normal mode): ", pygame.key.name(Key.select_mode_set_color))
-        print(" - resize editing surface (In normal mode): ", pygame.key.name(Key.resize_editing_surface))
-        print(" - layers management (In normal mode): ", pygame.key.name(Key.layer_mode_toggle))
-        print(" - undo editing surface modification (In normal mode): ", pygame.key.name(Key.undo_editing_surface_modification))
-        print(" - save current layer (In normal mode): ", pygame.key.name(Key.save_current_layer_surface))
-        print(" - pick current hovered color (In normal mode): ", pygame.key.name(Key.pick_color))
-        print(" - confirm (In any mode, used for prompts): ", pygame.key.name(Key.confirm))
-        print(" - fill bucket paint brush (In normal mode): " , pygame.key.name(Key.fill_bucket))
-        print(" - toggle grid lines (In normal mode): ", pygame.key.name(Key.toggle_grid_lines))
-        print(" - quit program without saving (or save warning) (In normal mode): ", pygame.key.name(Key.quit))
+        print_keybindings()
         sys.exit()
     elif (arg[:2] == "--" and not cli_only_files_remain):
         print(f"[{arg_index}] argument {arg} is not recognised")

@@ -734,6 +734,7 @@ while True:
                     State.unsaved_changes = True
                     log.output(logger.LOG_level("INFO"), f"Changed editing surface size to ({surface_layers[State.current_selected_surface_layer_index].get_width()}, {surface_layers[State.current_selected_surface_layer_index].get_height()})")
                 if (Mode.current == Mode.LAYERS):
+                    Mode.current = Mode.NORMAL
                     if len(State.text_io_buffer) < 1:
                         log.output(logger.LOG_level("WARNING"), f"Input Text Buffer is empty when submitting input to layers processor")
                         continue

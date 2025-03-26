@@ -566,6 +566,7 @@ while True:
                 log.output(logger.LOG_level("INFO"), "Entered layer mode")
                 Mode.current = Mode.LAYERS
                 clear_text_buffer()
+                continue
             if (Mode.current == Mode.NORMAL and event.key == Key.move_camera):
                 State.move_camera = True
             if (Mode.current == Mode.NORMAL and event.key == Key.undo_editing_surface_modification):

@@ -817,7 +817,7 @@ while True:
             if (Mode.current == Mode.RESIZE_SURFACE and (event.unicode.isdigit() or event.unicode in ["w", "h"])):
                 append_str_to_text_buffer(event.unicode)
 
-            if (Mode.current == Mode.LAYERS):
+            if (Mode.current == Mode.LAYERS and event.unicode.isprintable()):
                 # TODO, support more than just layer selection, allow for letter to be begain with, for specific commands. Such as bl (blend layers) <blend-mode> <base-layer-index> <blend-layer-index>. Have these as non-destructive (do not apply them to the layers, only visually present them as such, only on writes would you apply them to the saved image (compile the final image), but not the layers themselves)
                 append_str_to_text_buffer(event.unicode)
 

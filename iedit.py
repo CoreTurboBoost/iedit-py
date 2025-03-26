@@ -231,7 +231,7 @@ if (argc > 1):
 
 def assume_or_exception(condition: bool) -> None:
     if (not condition):
-        Exception(f"condition failed")
+        Exception(f"Assumption not met")
 
 arg_skip_count = 0
 cli_error_count = 0

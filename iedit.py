@@ -247,6 +247,19 @@ if (argc > 1):
         print(f"VERSION: {VERSION_MAJOR}.{VERSION_MINOR}.{VERSION_PATCH}")
         sys.exit()
 
+class ImageLoadStates:
+    NO_ERROR = 0
+    NOT_FOUND = 1
+    PYGAME_ERROR = 2
+def load_image(path: str) -> (Surface or None, ImageLoadStates, str):
+    try:
+        surface = pygame.image.load(path)
+    except FileNotFoundError:
+        return None, ImageLoadStates.NOT_FOUND, f"Could not load file '{path}'"
+    except pygame.error:
+        return None, ImageLoadStates.PYGAME_ERROR, f"Pygame could not load in the image file '{path}', {sys.exc_info()[1]}"
+    return surface, ImageLoadStates.NO_ERROR, ""
+
 def assume_or_exception(condition: bool) -> None:
     if (not condition):
         Exception(f"Assumption not met")

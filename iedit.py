@@ -296,7 +296,7 @@ for input_filepath in input_layer_filepaths:
     handled_filepaths.append(input_filepath)
     if (input_surface == None):
         print(f"Making a new image surface for layer '{input_filepath}'")
-        input_surface = pygame.Surface((32, 32), pygame.SRCALPHA)
+        input_surface = pygame.Surface(State.default_surface.copy())
     surface_layers.append(input_surface)
 if (load_file_error_count > 0):
     sys.exit(f"Exiting. {load_file_error_count} error(s) occured when loading image files from disk")
@@ -306,7 +306,7 @@ assume_or_exception(len(input_layer_filepaths) == len(surface_layers))
 
 if (len(input_layer_filepaths) == 0):
     print("No input image files given. Loading a default surface. Setting output file to 'a.png'.")
-    surface_layers.append(pygame.Surface((32, 32), pygame.SRCALPHA))
+    surface_layers.append(State.default_surface.copy())
     input_layer_filepaths.append("a.png")
 
 per_layer_undo_objects = [[]] * len(input_layer_filepaths)

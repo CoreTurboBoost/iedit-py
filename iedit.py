@@ -13,8 +13,8 @@ if (__name__ != "__main__"):
     sys.exit(1)
 
 VERSION_MAJOR = 0
-VERSION_MINOR = 10
-VERSION_PATCH = 1
+VERSION_MINOR = 11
+VERSION_PATCH = 0
 
 log = logger.LOG()
 log.set_warnlevel(logger.LOG_level("INFO"))

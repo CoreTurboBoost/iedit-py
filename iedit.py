@@ -611,8 +611,7 @@ while True:
                 else:
                     log.output(logger.LOG_level("WARNING"), f"fill_mask is None, failed to bucket fill")
             if (Mode.current == Mode.NORMAL and event.key == Key.pick_color):
-                reversed_camera_mouse_pos = camera_reverse_transform(State.last_mouse_position)
-                current_hovered_pixel_pos = (int(reversed_camera_mouse_pos[0]/(editing_surface_screen_proportionality_xy[0]*State.editing_surface_zoom)), int(reversed_camera_mouse_pos[1]/(editing_surface_screen_proportionality_xy[1]*State.editing_surface_zoom)))
+                current_hovered_pixel_pos = mouse_pos_on_cur_image_layer()
                 try:
                     hover_color = surface_layers[State.current_selected_surface_layer_index].get_at((current_hovered_pixel_pos[0], current_hovered_pixel_pos[1]))
                 except IndexError:

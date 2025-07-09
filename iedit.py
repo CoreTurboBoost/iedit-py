@@ -26,7 +26,7 @@ class RenderImage:
         '''
         param: position is the center of the surface, and will always stay the same.
         '''
-        self.surface = surface
+        self.surface_ptr = surface_ptr
         self.trans_rect = None
         self.trans_surface = None
         self.scale_mul = 1.0
@@ -42,7 +42,7 @@ class RenderImage:
         if scale_offset + self.scale_mul <= self.max_scale:
             self.scale_mul += scale_offset
     def calc_transform(self) -> None:
-        self.trans_surface = pygame.transform.scale(self.surface, (self.surface.get_width()*self.scale_mul, self.surface.get_height()*self.scale_mul))
+        self.trans_surface = pygame.transform.scale(self.surface_ptr, (self.surface_ptr.get_width()*self.scale_mul, self.surface_ptr.get_height()*self.scale_mul))
         self.trans_rect = self.trans_surface.get_rect(center=self.trans_rect.center)
     def get_twidth(self) -> int:
         '''
@@ -63,17 +63,17 @@ class RenderImage:
         '''
         Get original surface pixel width
         '''
-        return self.surface.get_width()
+        return self.surface_ptr.get_width()
     def get_owidth(self) -> int:
         '''
         Get original surface pixel height
         '''
-        return self.surface.get_height()
+        return self.surface_ptr.get_height()
     def get_osize(self) -> Vec2:
         '''
         Get original surface pixel size
         '''
-        return Vec2(self.surface.get_size())
+        return Vec2(self.surface_ptr.get_size())
     def get_cpos(self) -> Vec2:
         '''
         Get image center pixel position

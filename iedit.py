@@ -21,8 +21,8 @@ log.set_warnlevel(logger.LOG_level("INFO"))
 
 pygame.init()
 
-class Image:
-    def __init__(self, surface: Surface, position: Vec2):
+class RenderImage:
+    def __init__(self, surface_ptr: Surface, position: Vec2):
         '''
         param: position is the center of the surface, and will always stay the same.
         '''

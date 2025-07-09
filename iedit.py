@@ -147,6 +147,8 @@ class ImageLayerBuffer:
         self.filepath = filepath
         self.surface = None
         self.undo_object = []
+        self.unsaved_changes = False
+        self.render_image_obj = RenderImage(self.surface, Vec2(0, 0))
     def load(self) -> (bool, str):
         error_str = ""
         try:

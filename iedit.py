@@ -147,7 +147,7 @@ class ImageLayerBuffer:
         self.filepath = filepath
         self.surface = None
         self.undo_object = []
-        self.unsaved_changes = False
+        self.has_unsaved_changes = False
         self.render_image_obj = RenderImage(self.surface, Vec2(0, 0))
     def load(self) -> (bool, str):
         error_str = ""
@@ -230,6 +230,7 @@ def print_keybindings():
 
 input_layer_filepaths = []
 surface_layers = []
+image_objs = []
 
 argv = sys.argv
 argc = len(argv)
@@ -265,6 +266,13 @@ def load_image(path: str) -> (Surface or None, ImageLoadStates, str):
 def assume_or_exception(condition: bool) -> None:
     if (not condition):
         Exception(f"Assumption not met")
+
+def get_unsaved_images_count() -> int:
+    unsaved_images_count = 0
+    for image in image_objs:
+        if image.has_unsaved_changes:
+            unsaved_images_count += 1
+    return unsaved_images_count
 
 arg_skip_count = 0
 cli_error_count = 0

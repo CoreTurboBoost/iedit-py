@@ -770,6 +770,9 @@ while True:
                     while "" in text_buf_args:
                         text_buf_args.remove("")
                     operation = text_buf_args.pop(0)
+                    if operation == "i": # Show all available image layer indices
+                        indices_formatted_str = ", ".join([str(a) for a in range(len(input_layer_filepaths))])
+                        write_str_to_text_buffer(indices_formatted_str, True)
                     if operation == "c": # Show information about current selected layer
                         write_str_to_text_buffer(f"{State.current_selected_surface_layer_index} - {input_layer_filepaths[State.current_selected_surface_layer_index]}", True)
                     if operation == "n": # New image

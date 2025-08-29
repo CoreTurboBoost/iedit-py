@@ -770,14 +770,14 @@ while True:
                     while "" in text_buf_args:
                         text_buf_args.remove("")
                     operation = text_buf_args.pop(0)
-                    if operation == "n":
+                    if operation == "n": # New image
                         if len(text_buf_args) == 0:
                             write_str_to_text_buffer("Missing argument(s): <PATH> ...", True)
                             continue
                         for arg in text_buf_args:
                             log.output(logger.LOG_level("INFO"), f"Adding a new layer through the layer manger with the path of '{arg}'")
                             add_layer(arg, State.default_surface.copy())
-                    if operation == "l":
+                    if operation == "l": # Load image
                         if len(text_buf_args) == 0:
                             write_str_to_text_buffer("Missing argument(s): <PATH> ...", True)
                             continue
@@ -788,7 +788,7 @@ while True:
                                 write_str_to_text_buffer(f"Failed image load: {message}", True)
                                 continue
                             add_layer(arg, loaded_surface)
-                    if operation == "d":
+                    if operation == "d": # duplicate current image
                         if len(text_buf_args) == 0:
                             write_str_to_text_buffer("Missing argument: <PATH> ...", True)
                             continue

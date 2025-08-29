@@ -800,8 +800,8 @@ while True:
                             write_str_to_text_buffer("Missing argument: <PATH>", True)
                             continue
                         new_path = text_buf_args[0]
-                        log.output(logger.LOG_level("INFO"), f"Renaming current image {input_layer_filepaths[State.current_selected_surface_layer_index]} to {arg}")
-                        input_filepath[State.current_selected_surface_layer_index] = new_path
+                        log.output(logger.LOG_level("INFO"), f"Renaming current image {input_layer_filepaths[State.current_selected_surface_layer_index]} to {new_path}")
+                        input_layer_filepaths[State.current_selected_surface_layer_index] = new_path
 
             if (event.key == pygame.K_BACKSPACE):
                 if (Mode.current == Mode.SET_COLOR):

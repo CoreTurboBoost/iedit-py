@@ -770,6 +770,8 @@ while True:
                     while "" in text_buf_args:
                         text_buf_args.remove("")
                     operation = text_buf_args.pop(0)
+                    if operation == "c": # Show information about current selected layer
+                        write_str_to_text_buffer(f"{State.current_selected_surface_layer_index} - {input_layer_filepaths[State.current_selected_surface_layer_index]}", True)
                     if operation == "n": # New image
                         if len(text_buf_args) == 0:
                             write_str_to_text_buffer("Missing argument(s): <PATH> ...", True)

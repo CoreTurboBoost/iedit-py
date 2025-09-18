@@ -797,9 +797,10 @@ while True:
                         if len(text_buf_args) == 0:
                             write_str_to_text_buffer("Missing argument: <PATH> ...", True)
                             continue
+                        current_image_surface = surface_layers[State.current_selected_surface_layer_index]
                         for arg in text_buf_args:
                             log.output(logger.LOG_level("INFO"), f"Duplicating current image {input_layer_filepaths[State.current_selected_surface_layer_index]} to {arg}")
-                            add_layer(arg, loaded_surface)
+                            add_layer(arg, current_image_surface.copy())
                     if operation == "r": # rename current image
                         if len(text_buf_args) == 0:
                             write_str_to_text_buffer("Missing argument: <PATH>", True)

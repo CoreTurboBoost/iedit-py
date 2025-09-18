@@ -3,7 +3,7 @@
 import pygame
 from pygame.math import Vector2 as Vec2
 from pygame import (Surface, Rect)
-import sys
+import sys, os
 import time
 
 import logger
@@ -328,9 +328,15 @@ del load_file_error_count
 assume_or_exception(len(input_layer_filepaths) == len(surface_layers))
 
 if (len(input_layer_filepaths) == 0):
-    print("No input image files given. Loading a default surface. Setting output file to 'a.png'.")
-    surface_layers.append(State.default_surface.copy())
-    input_layer_filepaths.append("a.png")
+    default_image_path: str = "a.png"
+    print(f"No input image files given. Loading a default surface. Setting output file to '{default_image_path}'.")
+    image_surface = State.default_surface.copy()
+    if os.path.isfile(default_image_path):
+        loaded_surface, error_type, error_string = load_image(default_image_path)
+        if loaded_surface != None:
+            image_surface = loaded_surface
+    surface_layers.append(image_surface)
+    input_layer_filepaths.append(default_image_path)
 
 per_layer_undo_objects = [[]] * len(input_layer_filepaths)
 log.output(logger.LOG_level("INFO"), f"per_layer_undo_objects: {per_layer_undo_objects}")

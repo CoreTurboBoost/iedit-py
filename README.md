@@ -15,8 +15,8 @@ Controls:
  - For more detailed information on the controls pass the '--key-bindings' flag to the program.
 
 UI:
- - Top-Right color pallet boxes. The box with a border is the currently selected box.
- - Under that there is RGBA value of the current selected color.
+ - Top-Right is the color pallet boxes. The box with a border around it, is the currently selected box.
+ - Under that is the current selected color as an 8-bit per channel, RGBA value. Each channel ranges from 0 to 255.
  - Under that is the indicator showing the current layer index and the total number of layers ( (current-layer-index)/(total-number-of-layers)).
  - Bottom-Left is the current selected mode.
  - Bottom-Right is the text input box. This will automatically show up when in a mode that uses the text input box. This is also used to output the programs state after an action.

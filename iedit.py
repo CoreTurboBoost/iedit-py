@@ -15,7 +15,7 @@ if (__name__ != "__main__"):
     sys.exit(1)
 
 VERSION_MAJOR = 0
-VERSION_MINOR = 13
+VERSION_MINOR = 14
 VERSION_PATCH = 0
 
 log = logger.LOG()
@@ -330,6 +330,13 @@ image_layer_commands[0].set_matched_callback(
     )
 )
 
+def print_image_layer_commands() -> None:
+    print("Image Layer Commands:")
+    max_command_name_len = max(map(lambda x: len(x.get_name()), image_layer_commands))
+    for command in image_layer_commands:
+        print_message = f" {command.get_name():<{max_command_name_len}} - {command.get_description()}"
+        print(print_message)
+
 argv = sys.argv
 argc = len(argv)
 
@@ -340,7 +347,8 @@ if (argc > 1):
         print(f"Usage: python3 {argv[0]}")
         print(f"Usage: python3 {argv[0]} [Options] [--] <FILE>...")
         print(f"Options:")
-        print(f"  --key-bindings  - output key bindings and exit")
+        print(f"  --key-bindings      - output key bindings and exit")
+        print(f"  --image-layer-cmds  - output image layer commands")
         print(f"Note:")
         print(f"  - Any arguments past a '--' argument would only be considered as a file")
         sys.exit()
@@ -386,6 +394,9 @@ for arg_index in range(1, argc):
         cli_only_files_remain = True
     elif (arg == "--key-bindings" and not cli_only_files_remain):
         print_keybindings()
+        sys.exit()
+    elif (arg == "--image-layer-cmds" and not cli_only_files_remain):
+        print_image_layer_commands()
         sys.exit()
     elif (arg[:2] == "--" and not cli_only_files_remain):
         print(f"[{arg_index}] argument {arg} is not recognised")

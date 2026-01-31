@@ -252,8 +252,75 @@ input_layer_filepaths = []
 surface_layers = []
 image_objs = []
 
+def callback_image_layer_command_indicies(args: list[str]) -> None:
+    indices_formatted_str = ", ".join([str(a) for a in range(len(input_layer_filepaths))])
+    write_str_to_text_buffer(indices_formatted_str, True)
+def callback_image_layer_command_new(args: list[str]) -> None:
+    global log
+    if len(args) == 0:
+        write_str_to_text_buffer("Missing argument(s): <PATH> ...", True)
+        return
+    for arg in args:
+        log.output(logger.LOG_level("INFO"), f"Adding a new layer through the layer manger with the path of '{arg}'")
+        add_layer(arg, State.default_surface.copy())
+def callback_image_layer_command_load(args: list[str]) -> None:
+    global log
+    if len(args) == 0:
+        write_str_to_text_buffer("Missing argument(s): <PATH> ...", True)
+        return
+    for arg in args:
+        log.output(logger.LOG_level("INFO"), f"Attempting to load in image '{arg}'")
+        loaded_surface, status, message = load_image(arg)
+        log.output(logger.LOG_level("INFO"), f"Load states: status: {status}, message: {message}")
+        if status != ImageLoadStates.NO_ERROR:
+            write_str_to_text_buffer(f"Failed image load: {message}", True)
+            continue
+        add_layer(arg, loaded_surface)
+def callback_image_layer_command_duplicate(args: list[str]) -> None:
+    global log, surface_layers, input_layer_filepaths
+    if len(args) == 0:
+        write_str_to_text_buffer("Missing argument: <PATH> ...", True)
+        return
+    current_image_surface = surface_layers[State.current_selected_surface_layer_index]
+    for arg in args:
+        log.output(logger.LOG_level("INFO"), f"Duplicating current image {input_layer_filepaths[State.current_selected_surface_layer_index]} to {arg}")
+        add_layer(arg, current_image_surface.copy())
+def callback_image_layer_command_rename(args: list[str]) -> None:
+    global log, input_layer_filepaths
+    if len(args) == 0:
+        write_str_to_text_buffer("Missing argument: <PATH>", True)
+        return
+    new_path = args[0]
+    log.output(logger.LOG_level("INFO"), f"Renaming current image {input_layer_filepaths[State.current_selected_surface_layer_index]} to {new_path}")
+    input_layer_filepaths[State.current_selected_surface_layer_index] = new_path
+
 image_layer_commands: list[ImageLayerCommand] = []
 image_layer_commands.append(ImageLayerCommand("h", "Output all commands", None))
+image_layer_commands.append(ImageLayerCommand("i", "Get layers index", callback_image_layer_command_indicies))
+image_layer_commands.append(ImageLayerCommand("c", "Current image info",
+    lambda args:
+        write_str_to_text_buffer(
+            f"{State.current_selected_surface_layer_index} - " +
+            f"{input_layer_filepaths[State.current_selected_surface_layer_index]}",
+            True
+        )
+))
+image_layer_commands.append(
+    ImageLayerCommand("n", "New image",
+        callback_image_layer_command_new)
+)
+image_layer_commands.append(
+    ImageLayerCommand("l", "Load image",
+        callback_image_layer_command_load)
+)
+image_layer_commands.append(
+    ImageLayerCommand("d", "Duplicate image",
+        callback_image_layer_command_duplicate)
+)
+image_layer_commands.append(
+    ImageLayerCommand("r", "Change layer path",
+        callback_image_layer_command_rename)
+)
 
 def get_help_page_image_layer_commands() -> list[str]:
     return [f"{cmd.get_name()} - {cmd.get_description()}" for cmd in image_layer_commands]
@@ -806,44 +873,11 @@ while True:
                     while "" in text_buf_args:
                         text_buf_args.remove("")
                     operation = text_buf_args.pop(0)
-                    if operation == "i": # Show all available image layer indices
-                        indices_formatted_str = ", ".join([str(a) for a in range(len(input_layer_filepaths))])
-                        write_str_to_text_buffer(indices_formatted_str, True)
-                    if operation == "c": # Show information about current selected layer
-                        write_str_to_text_buffer(f"{State.current_selected_surface_layer_index} - {input_layer_filepaths[State.current_selected_surface_layer_index]}", True)
-                    if operation == "n": # New image
-                        if len(text_buf_args) == 0:
-                            write_str_to_text_buffer("Missing argument(s): <PATH> ...", True)
-                            continue
-                        for arg in text_buf_args:
-                            log.output(logger.LOG_level("INFO"), f"Adding a new layer through the layer manger with the path of '{arg}'")
-                            add_layer(arg, State.default_surface.copy())
-                    if operation == "l": # Load image
-                        if len(text_buf_args) == 0:
-                            write_str_to_text_buffer("Missing argument(s): <PATH> ...", True)
-                            continue
-                        for arg in text_buf_args:
-                            log.output(logger.LOG_level("INFO"), f"Attempting to load in image '{arg}'")
-                            loaded_surface, status, message = load_image(arg)
-                            if status != ImageLoadStates.NO_ERROR:
-                                write_str_to_text_buffer(f"Failed image load: {message}", True)
-                                continue
-                            add_layer(arg, loaded_surface)
-                    if operation == "d": # duplicate current image
-                        if len(text_buf_args) == 0:
-                            write_str_to_text_buffer("Missing argument: <PATH> ...", True)
-                            continue
-                        current_image_surface = surface_layers[State.current_selected_surface_layer_index]
-                        for arg in text_buf_args:
-                            log.output(logger.LOG_level("INFO"), f"Duplicating current image {input_layer_filepaths[State.current_selected_surface_layer_index]} to {arg}")
-                            add_layer(arg, current_image_surface.copy())
-                    if operation == "r": # rename current image
-                        if len(text_buf_args) == 0:
-                            write_str_to_text_buffer("Missing argument: <PATH>", True)
-                            continue
-                        new_path = text_buf_args[0]
-                        log.output(logger.LOG_level("INFO"), f"Renaming current image {input_layer_filepaths[State.current_selected_surface_layer_index]} to {new_path}")
-                        input_layer_filepaths[State.current_selected_surface_layer_index] = new_path
+                    for cmd in image_layer_commands:
+                        if cmd.get_name() == operation:
+                            if cmd.match(operation, text_buf_args): break
+                    else:
+                        write_str_to_text_buffer("Unrecognised command", True)
 
             if (event.key == pygame.K_BACKSPACE):
                 if (Mode.current == Mode.SET_COLOR):

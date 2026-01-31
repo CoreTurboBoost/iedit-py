@@ -217,7 +217,7 @@ class UITextElement:
         self.regenerate_surfaces()
 
 class ImageLayerCommand:
-    def __init__(self, name: str, description: str, matched_callback: typing.Callback):
+    def __init__(self, name: str, description: str, matched_callback: typing.Callable):
         self.__name = name
         self.__description = description
         self.__matched_callback = matched_callback
@@ -230,7 +230,7 @@ class ImageLayerCommand:
         return self.__name
     def get_description(self) -> str:
         return self.__description
-    def set_matched_callback(self, callback: typing.Callback) -> None:
+    def set_matched_callback(self, callback: typing.Callable) -> None:
         self.__matched_callback = callback
 
 def print_keybindings():

@@ -252,6 +252,17 @@ input_layer_filepaths = []
 surface_layers = []
 image_objs = []
 
+image_layer_commands: list[ImageLayerCommand] = []
+image_layer_commands.append(ImageLayerCommand("h", "Output all commands", None))
+
+def get_help_page_image_layer_commands() -> list[str]:
+    return [f"{cmd.get_name()} - {cmd.get_description()}" for cmd in image_layer_commands]
+image_layer_commands[0].set_matched_callback(
+    lambda args: write_str_to_text_buffer(
+        ", ".join(get_help_page_image_layer_commands()), True
+    )
+)
+
 argv = sys.argv
 argc = len(argv)
 

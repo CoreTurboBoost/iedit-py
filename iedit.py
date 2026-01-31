@@ -295,7 +295,7 @@ def callback_image_layer_command_rename(args: list[str]) -> None:
     input_layer_filepaths[State.current_selected_surface_layer_index] = new_path
 
 image_layer_commands: list[ImageLayerCommand] = []
-image_layer_commands.append(ImageLayerCommand("h", "Output all commands", None))
+image_layer_commands.append(ImageLayerCommand("h", "List all commands", None))
 image_layer_commands.append(ImageLayerCommand("i", "Get layers index", callback_image_layer_command_indicies))
 image_layer_commands.append(ImageLayerCommand("c", "Current image info",
     lambda args:

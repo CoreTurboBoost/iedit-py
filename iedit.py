@@ -6,6 +6,8 @@ from pygame import (Surface, Rect)
 import sys, os
 import time
 
+import typing
+
 import logger
 
 if (__name__ != "__main__"):
@@ -213,6 +215,23 @@ class UITextElement:
     def update_text(self, new_text: str) -> None:
         self.text = new_text
         self.regenerate_surfaces()
+
+class ImageLayerCommand:
+    def __init__(self, name: str, description: str, matched_callback: typing.Callback):
+        self.__name = name
+        self.__description = description
+        self.__matched_callback = matched_callback
+    def match(self, test_command: str, command_args: list[str]) -> bool:
+        if test_command != self.__name:
+            return False
+        self.__matched_callback(command_args)
+        return True
+    def get_name(self) -> str:
+        return self.__name
+    def get_description(self) -> str:
+        return self.__description
+    def set_matched_callback(self, callback: typing.Callback) -> None:
+        self.__matched_callback = callback
 
 def print_keybindings():
     print("Key bindings:")

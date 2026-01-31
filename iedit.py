@@ -324,6 +324,7 @@ image_layer_commands.append(
 
 def get_help_page_image_layer_commands() -> list[str]:
     return [f"{cmd.get_name()} - {cmd.get_description()}" for cmd in image_layer_commands]
+
 image_layer_commands[0].set_matched_callback(
     lambda args: write_str_to_text_buffer(
         ", ".join(get_help_page_image_layer_commands()), True
